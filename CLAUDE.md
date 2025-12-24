@@ -8,7 +8,7 @@
 - React 19
 - TypeScript
 - Tailwind CSS 4
-- NextAuth.js (네이버 OAuth)
+- NextAuth.js (구글 OAuth)
 - Tiptap (마크다운 에디터)
 
 ## 디렉토리 구조
