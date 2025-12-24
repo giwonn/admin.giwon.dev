@@ -1,14 +1,14 @@
 import { getServerSession } from "next-auth";
-import NaverProvider from "next-auth/providers/naver";
+import GoogleProvider from "next-auth/providers/google";
 import type { NextAuthOptions } from "next-auth";
 
 const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:8080";
 
 export const authOptions: NextAuthOptions = {
   providers: [
-    NaverProvider({
-      clientId: process.env.NAVER_CLIENT_ID!,
-      clientSecret: process.env.NAVER_CLIENT_SECRET!,
+    GoogleProvider({
+      clientId: process.env.GOOGLE_CLIENT_ID!,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
     }),
   ],
   pages: {
@@ -22,7 +22,7 @@ export const authOptions: NextAuthOptions = {
           const res = await fetch(`${BACKEND_URL}/api/auth/token`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ naverId: account.providerAccountId }),
+            body: JSON.stringify({ accountId: account.providerAccountId }),
           });
 
           if (res.ok) {
