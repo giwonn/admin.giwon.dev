@@ -117,7 +117,7 @@ export function TiptapEditor({ content = "", onChange }: TiptapEditorProps) {
 
   return (
     <div className="border border-gray-300 rounded-lg overflow-hidden bg-white">
-      <Toolbar editor={editor} showSource={showSource} onToggleSource={toggleSource} />
+      <Toolbar editor={editor} showSource={showSource} onToggleSource={toggleSource} onImageUpload={handleImageUpload} />
 
       {showSource ? (
         <textarea

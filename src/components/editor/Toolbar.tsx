@@ -6,9 +6,10 @@ interface ToolbarProps {
   editor: Editor;
   showSource: boolean;
   onToggleSource: () => void;
+  onImageUpload: (file: File) => void;
 }
 
-export function Toolbar({ editor, showSource, onToggleSource }: ToolbarProps) {
+export function Toolbar({ editor, showSource, onToggleSource, onImageUpload }: ToolbarProps) {
   const buttonClass = (isActive: boolean) =>
     `px-3 py-1.5 text-sm font-medium rounded ${
       isActive
@@ -16,11 +17,25 @@ export function Toolbar({ editor, showSource, onToggleSource }: ToolbarProps) {
         : "text-gray-600 hover:bg-gray-100"
     }`;
 
+  const handleImageClick = () => {
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = "image/*";
+    input.onchange = (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0];
+      if (file) {
+        onImageUpload(file);
+      }
+    };
+    input.click();
+  };
+
   return (
     <div className="flex flex-wrap items-center gap-1 p-2 border-b border-gray-200 bg-gray-50">
       {!showSource && (
         <>
           <button
+            type="button"
             onClick={() => editor.chain().focus().toggleBold().run()}
             className={buttonClass(editor.isActive("bold"))}
             title="굵게"
@@ -28,6 +43,7 @@ export function Toolbar({ editor, showSource, onToggleSource }: ToolbarProps) {
             B
           </button>
           <button
+            type="button"
             onClick={() => editor.chain().focus().toggleItalic().run()}
             className={buttonClass(editor.isActive("italic"))}
             title="기울임"
@@ -35,6 +51,7 @@ export function Toolbar({ editor, showSource, onToggleSource }: ToolbarProps) {
             I
           </button>
           <button
+            type="button"
             onClick={() => editor.chain().focus().toggleStrike().run()}
             className={buttonClass(editor.isActive("strike"))}
             title="취소선"
@@ -42,6 +59,7 @@ export function Toolbar({ editor, showSource, onToggleSource }: ToolbarProps) {
             S
           </button>
           <button
+            type="button"
             onClick={() => editor.chain().focus().toggleCode().run()}
             className={buttonClass(editor.isActive("code"))}
             title="인라인 코드"
@@ -52,6 +70,7 @@ export function Toolbar({ editor, showSource, onToggleSource }: ToolbarProps) {
           <div className="w-px h-6 bg-gray-300 mx-1" />
 
           <button
+            type="button"
             onClick={() =>
               editor.chain().focus().toggleHeading({ level: 1 }).run()
             }
@@ -61,6 +80,7 @@ export function Toolbar({ editor, showSource, onToggleSource }: ToolbarProps) {
             H1
           </button>
           <button
+            type="button"
             onClick={() =>
               editor.chain().focus().toggleHeading({ level: 2 }).run()
             }
@@ -70,6 +90,7 @@ export function Toolbar({ editor, showSource, onToggleSource }: ToolbarProps) {
             H2
           </button>
           <button
+            type="button"
             onClick={() =>
               editor.chain().focus().toggleHeading({ level: 3 }).run()
             }
@@ -82,6 +103,7 @@ export function Toolbar({ editor, showSource, onToggleSource }: ToolbarProps) {
           <div className="w-px h-6 bg-gray-300 mx-1" />
 
           <button
+            type="button"
             onClick={() => editor.chain().focus().toggleBulletList().run()}
             className={buttonClass(editor.isActive("bulletList"))}
             title="순서 없는 목록"
@@ -89,6 +111,7 @@ export function Toolbar({ editor, showSource, onToggleSource }: ToolbarProps) {
             • 목록
           </button>
           <button
+            type="button"
             onClick={() => editor.chain().focus().toggleOrderedList().run()}
             className={buttonClass(editor.isActive("orderedList"))}
             title="순서 있는 목록"
@@ -96,6 +119,7 @@ export function Toolbar({ editor, showSource, onToggleSource }: ToolbarProps) {
             1. 목록
           </button>
           <button
+            type="button"
             onClick={() => editor.chain().focus().toggleBlockquote().run()}
             className={buttonClass(editor.isActive("blockquote"))}
             title="인용"
@@ -103,6 +127,7 @@ export function Toolbar({ editor, showSource, onToggleSource }: ToolbarProps) {
             인용
           </button>
           <button
+            type="button"
             onClick={() => editor.chain().focus().toggleCodeBlock().run()}
             className={buttonClass(editor.isActive("codeBlock"))}
             title="코드 블록"
@@ -113,11 +138,20 @@ export function Toolbar({ editor, showSource, onToggleSource }: ToolbarProps) {
           <div className="w-px h-6 bg-gray-300 mx-1" />
 
           <button
+            type="button"
             onClick={() => editor.chain().focus().setHorizontalRule().run()}
             className={buttonClass(false)}
             title="구분선"
           >
             ─
+          </button>
+          <button
+            type="button"
+            onClick={handleImageClick}
+            className={buttonClass(false)}
+            title="이미지 추가"
+          >
+            🖼️
           </button>
         </>
       )}
@@ -125,6 +159,7 @@ export function Toolbar({ editor, showSource, onToggleSource }: ToolbarProps) {
       <div className="flex-1" />
 
       <button
+        type="button"
         onClick={onToggleSource}
         className={`px-3 py-1.5 text-sm font-medium rounded ${
           showSource
