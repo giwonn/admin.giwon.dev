@@ -4,9 +4,15 @@ import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import ImageResize from "tiptap-extension-resize-image";
 import Placeholder from "@tiptap/extension-placeholder";
+import { TextStyle } from "@tiptap/extension-text-style";
+import CodeBlockLowlight from "@tiptap/extension-code-block-lowlight";
+import { common, createLowlight } from "lowlight";
 import { Markdown } from "tiptap-markdown";
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { Toolbar } from "./Toolbar";
+import { FontSize } from "./extensions/FontSize";
+
+const lowlight = createLowlight(common);
 
 interface TiptapEditorProps {
   content?: string;
@@ -16,11 +22,19 @@ interface TiptapEditorProps {
 export function TiptapEditor({ content = "", onChange }: TiptapEditorProps) {
   const [showSource, setShowSource] = useState(false);
   const [markdownSource, setMarkdownSource] = useState("");
+  const [, setEditorState] = useState(0);
 
   const editor = useEditor({
     immediatelyRender: false,
     extensions: [
-      StarterKit,
+      StarterKit.configure({
+        codeBlock: false,
+      }),
+      TextStyle,
+      FontSize,
+      CodeBlockLowlight.configure({
+        lowlight,
+      }),
       ImageResize.configure({
         allowBase64: true,
       }),
@@ -41,7 +55,7 @@ export function TiptapEditor({ content = "", onChange }: TiptapEditorProps) {
     editorProps: {
       attributes: {
         class:
-          "prose prose-sm sm:prose lg:prose-lg max-w-none focus:outline-none min-h-[400px] p-4",
+          "max-w-none focus:outline-none min-h-[400px] p-4",
       },
       handleDrop: (view, event, _slice, moved) => {
         if (
@@ -111,6 +125,23 @@ export function TiptapEditor({ content = "", onChange }: TiptapEditorProps) {
     setMarkdownSource(e.target.value);
     onChange?.(e.target.value);
   };
+
+  // 에디터 상태 변경 시 툴바 리렌더링을 위한 이벤트 리스너
+  useEffect(() => {
+    if (!editor) return;
+
+    const handleUpdate = () => {
+      setEditorState((prev) => prev + 1);
+    };
+
+    editor.on("selectionUpdate", handleUpdate);
+    editor.on("transaction", handleUpdate);
+
+    return () => {
+      editor.off("selectionUpdate", handleUpdate);
+      editor.off("transaction", handleUpdate);
+    };
+  }, [editor]);
 
   if (!editor) {
     return null;
