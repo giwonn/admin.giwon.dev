@@ -1,0 +1,19 @@
+name: giwon-blog-admin
+
+services:
+  admin:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: giwon-blog-admin
+    restart: unless-stopped
+    ports:
+      - "3001:3000"
+    networks:
+      - blog-network
+    environment:
+      - NODE_ENV=production
+
+networks:
+  blog-network:
+    external: true
