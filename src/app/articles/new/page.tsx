@@ -1,8 +1,20 @@
 "use client";
 
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import { useState } from "react";
-import { TiptapEditor } from "@/components/editor/TiptapEditor";
+
+const TiptapEditor = dynamic(
+  () => import("@/components/editor/TiptapEditor").then((mod) => mod.TiptapEditor),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="border border-gray-300 rounded-lg bg-white min-h-[400px] flex items-center justify-center text-gray-400">
+        에디터 로딩 중...
+      </div>
+    ),
+  }
+);
 
 export default function NewArticlePage() {
   const [title, setTitle] = useState("");

@@ -2,7 +2,7 @@
 
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
-import Image from "@tiptap/extension-image";
+import ImageResize from "tiptap-extension-resize-image";
 import Placeholder from "@tiptap/extension-placeholder";
 import { Markdown } from "tiptap-markdown";
 import { useState, useCallback } from "react";
@@ -18,9 +18,10 @@ export function TiptapEditor({ content = "", onChange }: TiptapEditorProps) {
   const [markdownSource, setMarkdownSource] = useState("");
 
   const editor = useEditor({
+    immediatelyRender: false,
     extensions: [
       StarterKit,
-      Image.configure({
+      ImageResize.configure({
         allowBase64: true,
       }),
       Placeholder.configure({
