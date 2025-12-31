@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@plugin "@tailwindcss/typography";
 
 :root {
   --background: #ffffff;
@@ -25,14 +26,107 @@ body {
   font-family: Arial, Helvetica, sans-serif;
 }
 
-/* Tiptap 이미지 리사이즈 스타일 */
-.tiptap img {
-  max-width: 100%;
-  height: auto;
-  cursor: pointer;
+/* Tiptap 에디터 스타일 */
+.ProseMirror {
+  /* 이미지 */
+  img {
+    max-width: 100%;
+    height: auto;
+    cursor: pointer;
+  }
+
+  img.ProseMirror-selectednode {
+    outline: 2px solid #3b82f6;
+    outline-offset: 2px;
+  }
+
+  /* Heading 스타일 조정 */
+  h1 {
+    font-size: 1.75rem;
+    font-weight: 700;
+    margin: 1rem 0 0.5rem;
+  }
+
+  h2 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin: 0.875rem 0 0.5rem;
+  }
+
+  h3 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin: 0.75rem 0 0.5rem;
+  }
+
+  /* Bold가 글자 크기에 영향 주지 않도록 */
+  strong {
+    font-weight: 700;
+    font-size: inherit;
+  }
+
+  /* 리스트 스타일 */
+  ul {
+    list-style-type: disc;
+    padding-left: 1.5rem;
+  }
+
+  ol {
+    list-style-type: decimal;
+    padding-left: 1.5rem;
+  }
+
+  /* 코드 스타일 */
+  code {
+    background-color: #f3f4f6;
+    padding: 0.125rem 0.25rem;
+    border-radius: 0.25rem;
+    font-size: 0.875em;
+  }
+
+  pre {
+    background-color: #1e1e1e;
+    color: #d4d4d4;
+    padding: 1rem;
+    border-radius: 0.5rem;
+    overflow-x: auto;
+    font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+
+    code {
+      background-color: transparent;
+      padding: 0;
+      color: inherit;
+      font-family: inherit;
+    }
+  }
 }
 
-.tiptap img.ProseMirror-selectednode {
-  outline: 2px solid #3b82f6;
-  outline-offset: 2px;
-}
+/* 코드 하이라이팅 (VS Code Dark+ 테마) */
+.ProseMirror pre code .hljs-keyword { color: #569cd6 !important; }
+.ProseMirror pre code .hljs-built_in { color: #4ec9b0 !important; }
+.ProseMirror pre code .hljs-type { color: #4ec9b0 !important; }
+.ProseMirror pre code .hljs-literal { color: #569cd6 !important; }
+.ProseMirror pre code .hljs-number { color: #b5cea8 !important; }
+.ProseMirror pre code .hljs-string { color: #ce9178 !important; }
+.ProseMirror pre code .hljs-comment { color: #6a9955 !important; }
+.ProseMirror pre code .hljs-function { color: #dcdcaa !important; }
+.ProseMirror pre code .hljs-class { color: #4ec9b0 !important; }
+.ProseMirror pre code .hljs-class_ { color: #4ec9b0 !important; }
+.ProseMirror pre code .hljs-variable { color: #9cdcfe !important; }
+.ProseMirror pre code .hljs-attr { color: #9cdcfe !important; }
+.ProseMirror pre code .hljs-params { color: #9cdcfe !important; }
+.ProseMirror pre code .hljs-punctuation { color: #d4d4d4 !important; }
+.ProseMirror pre code .hljs-tag { color: #569cd6 !important; }
+.ProseMirror pre code .hljs-name { color: #569cd6 !important; }
+.ProseMirror pre code .hljs-attribute { color: #9cdcfe !important; }
+.ProseMirror pre code .hljs-selector-tag { color: #d7ba7d !important; }
+.ProseMirror pre code .hljs-selector-class { color: #d7ba7d !important; }
+.ProseMirror pre code .hljs-selector-id { color: #d7ba7d !important; }
+.ProseMirror pre code .hljs-property { color: #9cdcfe !important; }
+.ProseMirror pre code .hljs-meta { color: #569cd6 !important; }
+.ProseMirror pre code .hljs-title { color: #dcdcaa !important; }
+.ProseMirror pre code .hljs-title.function_ { color: #dcdcaa !important; }
+.ProseMirror pre code .hljs-title.class_ { color: #4ec9b0 !important; }
+.ProseMirror pre code .function_ { color: #dcdcaa !important; }
+.ProseMirror pre code .hljs-variable.language_ { color: #9cdcfe !important; }
+.ProseMirror pre code .language_ { color: #9cdcfe !important; }
