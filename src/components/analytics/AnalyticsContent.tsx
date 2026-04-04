@@ -83,7 +83,7 @@ export function AnalyticsContent({
         <div className="text-center text-gray-500 py-20">불러오는 중...</div>
       ) : (
         <div className="space-y-6">
-          <div className="grid grid-cols-2 gap-4">
+          <div id="overview" className="grid grid-cols-2 gap-4">
             <div className="bg-white rounded-lg shadow p-6">
               <div className="text-sm text-gray-500">총 페이지뷰</div>
               <div className="text-3xl font-bold mt-1">
@@ -98,7 +98,7 @@ export function AnalyticsContent({
             </div>
           </div>
 
-          <div className="bg-white rounded-lg shadow p-6">
+          <div id="daily" className="bg-white rounded-lg shadow p-6">
             <h2 className="text-lg font-semibold mb-4">일별 페이지뷰</h2>
             {dailyViews.length === 0 ? (
               <div className="text-gray-500 text-center py-8">데이터가 없습니다</div>
@@ -122,7 +122,7 @@ export function AnalyticsContent({
             )}
           </div>
 
-          <div>
+          <div id="referrers">
             <div className="bg-white rounded-lg shadow p-6">
               <h2 className="text-lg font-semibold mb-4">유입 경로</h2>
               {referrers.length === 0 ? (

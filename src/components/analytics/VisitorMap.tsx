@@ -37,7 +37,7 @@ export function VisitorMap({ from, to }: VisitorMapProps) {
   }, [from, to]);
 
   return (
-    <div className="space-y-6">
+    <div id="map" className="space-y-6">
       {/* 지도 */}
       <div className="bg-white rounded-lg shadow p-6">
         <h2 className="text-lg font-semibold mb-4">방문자 위치</h2>

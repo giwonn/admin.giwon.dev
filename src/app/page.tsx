@@ -18,13 +18,14 @@ export default async function DashboardPage() {
 
   return (
     <div className="p-8">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+      {/* 방문자 통계 → 클릭 시 분석 페이지 */}
+      <Link href="/analytics#overview" className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         <StatCard label="오늘 방문자" value={stats?.today} />
         <StatCard label="어제 방문자" value={stats?.yesterday} />
         <StatCard label="전체 방문자" value={stats?.total} />
-      </div>
+      </Link>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
         <div className="bg-white rounded-lg shadow">
           <div className="px-6 py-4 border-b flex items-center justify-between">
             <h2 className="text-lg font-semibold">최근 글</h2>
@@ -57,8 +58,11 @@ export default async function DashboardPage() {
         </div>
 
         <div className="bg-white rounded-lg shadow">
-          <div className="px-6 py-4 border-b">
+          <div className="px-6 py-4 border-b flex items-center justify-between">
             <h2 className="text-lg font-semibold">인기 게시글</h2>
+            <Link href="/analytics#popular" className="text-sm text-blue-600 hover:underline">
+              자세히
+            </Link>
           </div>
           {popularArticles.length === 0 ? (
             <div className="p-8 text-center text-gray-400">데이터 수집 중...</div>
@@ -82,13 +86,29 @@ export default async function DashboardPage() {
           )}
         </div>
       </div>
+
+      {/* 분석 요약 링크들 */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <Link href="/analytics#daily" className="bg-white rounded-lg shadow p-4 hover:shadow-md transition-shadow">
+          <h3 className="text-sm font-semibold text-gray-700">일별 페이지뷰</h3>
+          <p className="text-xs text-gray-400 mt-1">일별 추이 확인 →</p>
+        </Link>
+        <Link href="/analytics#referrers" className="bg-white rounded-lg shadow p-4 hover:shadow-md transition-shadow">
+          <h3 className="text-sm font-semibold text-gray-700">유입 경로</h3>
+          <p className="text-xs text-gray-400 mt-1">어디서 왔는지 확인 →</p>
+        </Link>
+        <Link href="/analytics#map" className="bg-white rounded-lg shadow p-4 hover:shadow-md transition-shadow">
+          <h3 className="text-sm font-semibold text-gray-700">방문자 위치</h3>
+          <p className="text-xs text-gray-400 mt-1">지도로 확인 →</p>
+        </Link>
+      </div>
     </div>
   );
 }
 
 function StatCard({ label, value }: { label: string; value: number | undefined }) {
   return (
-    <div className="bg-white rounded-lg shadow p-6">
+    <div className="bg-white rounded-lg shadow p-6 hover:shadow-md transition-shadow">
       <p className="text-sm text-gray-500 mb-1">{label}</p>
       <p className="text-2xl font-bold text-gray-900">
         {value === undefined ? "-" : value.toLocaleString()}
