@@ -112,22 +112,30 @@ export default function EditArticlePage() {
           )}
         </div>
         <div className="flex gap-2">
-          <button
-            onClick={handleSaveDraft}
-            disabled={isLoading}
-            className="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            임시저장
-          </button>
-          {article?.status !== "PUBLISHED" ? (
+          {article?.status === "PUBLISHED" ? (
             <button
-              onClick={() => setShowPublishPanel(true)}
-              className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
+              onClick={handleSaveDraft}
+              disabled={isLoading}
+              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              발행
+              {isLoading ? "저장 중..." : "수정 저장"}
             </button>
           ) : (
-            <span className="px-4 py-2 text-sm text-green-600 font-medium">발행됨</span>
+            <>
+              <button
+                onClick={handleSaveDraft}
+                disabled={isLoading}
+                className="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                임시저장
+              </button>
+              <button
+                onClick={() => setShowPublishPanel(true)}
+                className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
+              >
+                발행
+              </button>
+            </>
           )}
         </div>
       </div>
