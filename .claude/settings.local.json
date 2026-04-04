@@ -47,7 +47,8 @@
       "Bash(./gradlew :api-admin:test)",
       "Bash(grep -E \"tests completed|test$|Test\")",
       "Bash(git:*)",
-      "Bash(./gradlew :core:compileKotlin)"
+      "Bash(./gradlew :core:compileKotlin)",
+      "Bash(sed:*)"
     ]
   }
 }
