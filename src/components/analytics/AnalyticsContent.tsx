@@ -9,6 +9,7 @@ import {
   type DailyPageViewCount,
   type ReferrerCount,
 } from "@/actions/analytics";
+import { VisitorMap } from "./VisitorMap";
 
 interface AnalyticsContentProps {
   initialOverview: AnalyticsOverview | null;
@@ -146,6 +147,8 @@ export function AnalyticsContent({
               )}
             </div>
           </div>
+
+          <VisitorMap from={from} to={to} />
         </div>
       )}
     </>

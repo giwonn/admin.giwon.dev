@@ -57,3 +57,16 @@ export interface PopularArticle {
 export async function getPopularArticles(): Promise<PopularArticle[]> {
   return apiClient<PopularArticle[]>(`/admin/dashboard/popular-articles`);
 }
+
+export interface VisitorLocation {
+  ipAddress: string;
+  latitude: number;
+  longitude: number;
+  country: string | null;
+  city: string | null;
+  visitCount: number;
+}
+
+export async function getVisitorLocations(from: string, to: string): Promise<VisitorLocation[]> {
+  return apiClient<VisitorLocation[]>(`/admin/analytics/visitor-locations?from=${from}&to=${to}`);
+}
