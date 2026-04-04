@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useState, useEffect } from "react";
 import {
   getOverview,
@@ -50,34 +49,27 @@ export default function AnalyticsPage() {
   }, [from, to]);
 
   return (
-    <div className="min-h-screen bg-gray-100">
-      <header className="bg-white shadow">
-        <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
-          <div className="flex items-center gap-4">
-            <Link href="/" className="text-gray-500 hover:text-gray-700">
-              ← 대시보드
-            </Link>
-            <h1 className="text-xl font-bold">분석</h1>
-          </div>
-          <div className="flex items-center gap-2">
-            <input
-              type="date"
-              value={from}
-              onChange={(e) => setFrom(e.target.value)}
-              className="px-3 py-1.5 border border-gray-300 rounded-md text-sm"
-            />
-            <span className="text-gray-500">~</span>
-            <input
-              type="date"
-              value={to}
-              onChange={(e) => setTo(e.target.value)}
-              className="px-3 py-1.5 border border-gray-300 rounded-md text-sm"
-            />
-          </div>
+    <div className="p-8">
+      <div className="flex justify-between items-center mb-8">
+        <h1 className="text-2xl font-bold">분석</h1>
+        <div className="flex items-center gap-2">
+          <input
+            type="date"
+            value={from}
+            onChange={(e) => setFrom(e.target.value)}
+            className="px-3 py-1.5 border border-gray-300 rounded-md text-sm"
+          />
+          <span className="text-gray-500">~</span>
+          <input
+            type="date"
+            value={to}
+            onChange={(e) => setTo(e.target.value)}
+            className="px-3 py-1.5 border border-gray-300 rounded-md text-sm"
+          />
         </div>
-      </header>
+      </div>
 
-      <main className="max-w-7xl mx-auto px-4 py-8">
+      <div>
         {isLoading ? (
           <div className="text-center text-gray-500 py-20">불러오는 중...</div>
         ) : (
@@ -175,7 +167,7 @@ export default function AnalyticsPage() {
             </div>
           </div>
         )}
-      </main>
+      </div>
     </div>
   );
 }

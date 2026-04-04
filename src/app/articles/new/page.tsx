@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 import { useState } from "react";
@@ -47,46 +46,37 @@ export default function NewArticlePage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100">
-      <header className="bg-white shadow">
-        <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
-          <div className="flex items-center gap-4">
-            <Link href="/articles" className="text-gray-500 hover:text-gray-700">
-              ← 돌아가기
-            </Link>
-            <h1 className="text-xl font-bold">새 글 작성</h1>
-          </div>
-          <button
-            onClick={handleSubmit}
-            disabled={isLoading}
-            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {isLoading ? "저장 중..." : "저장"}
-          </button>
+    <div className="p-8">
+      <div className="flex justify-between items-center mb-8">
+        <h1 className="text-2xl font-bold">새 글 작성</h1>
+        <button
+          onClick={handleSubmit}
+          disabled={isLoading}
+          className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {isLoading ? "저장 중..." : "저장"}
+        </button>
+      </div>
+
+      {error && (
+        <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-md">
+          {error}
         </div>
-      </header>
+      )}
 
-      <main className="max-w-5xl mx-auto px-4 py-8">
-        {error && (
-          <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-md">
-            {error}
-          </div>
-        )}
+      <form onSubmit={handleSubmit} className="space-y-6">
+        <div>
+          <input
+            type="text"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            placeholder="제목을 입력하세요"
+            className="w-full px-4 py-3 text-2xl font-bold border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div>
-            <input
-              type="text"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="제목을 입력하세요"
-              className="w-full px-4 py-3 text-2xl font-bold border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-
-          <TiptapEditor content={content} onChange={setContent} />
-        </form>
-      </main>
+        <TiptapEditor content={content} onChange={setContent} />
+      </form>
     </div>
   );
 }
