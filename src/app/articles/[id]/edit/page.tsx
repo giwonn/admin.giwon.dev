@@ -72,15 +72,25 @@ export default function EditArticlePage() {
   };
 
   const handlePublishNow = async () => {
-    await updateArticle(id, title, content);
-    await publishArticle(id);
-    router.push("/articles");
+    try {
+      await updateArticle(id, title, content);
+      await publishArticle(id);
+      router.push("/articles");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "발행에 실패했습니다.");
+      setShowPublishPanel(false);
+    }
   };
 
   const handleSchedule = async (publishedAt: string) => {
-    await updateArticle(id, title, content);
-    await scheduleArticle(id, publishedAt);
-    router.push("/articles");
+    try {
+      await updateArticle(id, title, content);
+      await scheduleArticle(id, publishedAt);
+      router.push("/articles");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "예약 발행에 실패했습니다.");
+      setShowPublishPanel(false);
+    }
   };
 
   if (isFetching) {
@@ -109,12 +119,16 @@ export default function EditArticlePage() {
           >
             임시저장
           </button>
-          <button
-            onClick={() => setShowPublishPanel(true)}
-            className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
-          >
-            발행
-          </button>
+          {article?.status !== "PUBLISHED" ? (
+            <button
+              onClick={() => setShowPublishPanel(true)}
+              className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
+            >
+              발행
+            </button>
+          ) : (
+            <span className="px-4 py-2 text-sm text-green-600 font-medium">발행됨</span>
+          )}
         </div>
       </div>
 
