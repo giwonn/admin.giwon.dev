@@ -2,6 +2,8 @@ import Link from "next/link";
 import { getArticles } from "@/actions/articles";
 import { DeleteArticleButton } from "@/components/articles/DeleteArticleButton";
 
+export const dynamic = "force-dynamic";
+
 export default async function ArticlesPage() {
   const articles = await getArticles();
 
