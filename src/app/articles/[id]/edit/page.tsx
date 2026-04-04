@@ -118,7 +118,7 @@ export default function EditArticlePage() {
               disabled={isLoading}
               className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isLoading ? "저장 중..." : "수정 저장"}
+              {isLoading ? "저장 중..." : "저장"}
             </button>
           ) : (
             <>
