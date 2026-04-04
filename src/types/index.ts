@@ -3,10 +3,14 @@ export interface ApiResponse<T> {
   data: T;
 }
 
+export type ArticleStatus = 'DRAFT' | 'SCHEDULED' | 'PUBLISHED';
+
 export interface Article {
   id: number;
   title: string;
   content: string;
+  status: ArticleStatus;
+  publishedAt: string | null;
   createdAt: string;
   updatedAt: string;
 }

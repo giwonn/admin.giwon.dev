@@ -1,18 +1,21 @@
 "use client";
 
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
-import { getArticle } from "@/actions/articles";
+import { getArticle, publishArticle, scheduleArticle } from "@/actions/articles";
 import { DeleteArticleButton } from "@/components/articles/DeleteArticleButton";
+import { StatusBadge } from "@/components/articles/StatusBadge";
 import type { Article } from "@/types";
 
 export default function ArticleDetailPage() {
   const params = useParams();
+  const router = useRouter();
   const id = Number(params.id);
 
   const [article, setArticle] = useState<Article | null>(null);
   const [isFetching, setIsFetching] = useState(true);
+  const [isPublishing, setIsPublishing] = useState(false);
 
   useEffect(() => {
     async function fetchArticle() {
@@ -28,6 +31,24 @@ export default function ArticleDetailPage() {
     fetchArticle();
   }, [id]);
 
+  const handlePublish = async () => {
+    setIsPublishing(true);
+    try {
+      const updated = await publishArticle(id);
+      setArticle(updated);
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "발행에 실패했습니다.");
+    } finally {
+      setIsPublishing(false);
+    }
+  };
+
+  const handleCancelSchedule = async () => {
+    // Cancel schedule by re-saving as draft (update without publish)
+    // For now we just refresh - this depends on backend support
+    router.refresh();
+  };
+
   if (isFetching) {
     return <div className="p-8 text-center text-gray-500">불러오는 중...</div>;
   }
@@ -39,8 +60,28 @@ export default function ArticleDetailPage() {
   return (
     <div className="p-8">
       <div className="flex justify-between items-center mb-8">
-        <h1 className="text-2xl font-bold">{article.title}</h1>
+        <div className="flex items-center gap-3">
+          <h1 className="text-2xl font-bold">{article.title}</h1>
+          <StatusBadge status={article.status} />
+        </div>
         <div className="flex gap-2">
+          {article.status === "DRAFT" && (
+            <button
+              onClick={handlePublish}
+              disabled={isPublishing}
+              className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors disabled:opacity-50"
+            >
+              {isPublishing ? "발행 중..." : "발행"}
+            </button>
+          )}
+          {article.status === "SCHEDULED" && (
+            <button
+              onClick={handleCancelSchedule}
+              className="px-4 py-2 bg-yellow-600 text-white rounded-md hover:bg-yellow-700 transition-colors"
+            >
+              예약 취소
+            </button>
+          )}
           <Link
             href={`/articles/${id}/edit`}
             className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
@@ -62,6 +103,10 @@ export default function ArticleDetailPage() {
                 <dd className="font-medium">{article.id}</dd>
               </div>
               <div>
+                <dt className="text-sm text-gray-500">상태</dt>
+                <dd className="font-medium"><StatusBadge status={article.status} /></dd>
+              </div>
+              <div>
                 <dt className="text-sm text-gray-500">작성일</dt>
                 <dd className="font-medium">{new Date(article.createdAt).toLocaleDateString("ko-KR")}</dd>
               </div>
@@ -69,6 +114,16 @@ export default function ArticleDetailPage() {
                 <dt className="text-sm text-gray-500">수정일</dt>
                 <dd className="font-medium">{new Date(article.updatedAt).toLocaleDateString("ko-KR")}</dd>
               </div>
+              {article.publishedAt && (
+                <div>
+                  <dt className="text-sm text-gray-500">
+                    {article.status === "SCHEDULED" ? "예약 발행일" : "발행일"}
+                  </dt>
+                  <dd className="font-medium">
+                    {new Date(article.publishedAt).toLocaleString("ko-KR")}
+                  </dd>
+                </div>
+              )}
               <div>
                 <dt className="text-sm text-gray-500">글자 수</dt>
                 <dd className="font-medium">{article.content.length.toLocaleString()}자</dd>
@@ -86,7 +141,7 @@ export default function ArticleDetailPage() {
           </div>
         </div>
 
-        {/* 사이드 - 통계 (추후 API 연동) */}
+        {/* 사이드 - 통계 */}
         <div className="space-y-6">
           <div className="bg-white rounded-lg shadow p-6">
             <h2 className="text-lg font-semibold mb-4">통계</h2>

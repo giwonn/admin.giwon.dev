@@ -26,6 +26,16 @@ export async function getOverview(from: string, to: string): Promise<AnalyticsOv
   return apiClient<AnalyticsOverview>(`/admin/analytics/overview?from=${from}&to=${to}`);
 }
 
+export async function getVisitorStats(): Promise<{ today: number; yesterday: number; total: number }> {
+  const today = new Date();
+  const from = new Date(today);
+  from.setDate(from.getDate() - 30);
+  const formatDate = (d: Date) => d.toISOString().split('T')[0];
+  return apiClient<{ today: number; yesterday: number; total: number }>(
+    `/admin/analytics/overview?from=${formatDate(from)}&to=${formatDate(today)}`
+  );
+}
+
 export async function getDailyPageViews(from: string, to: string): Promise<DailyPageViewCount[]> {
   return apiClient<DailyPageViewCount[]>(`/admin/analytics/page-views?from=${from}&to=${to}`);
 }
