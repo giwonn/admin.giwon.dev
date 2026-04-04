@@ -47,3 +47,13 @@ export async function getTopPages(from: string, to: string): Promise<PageViewCou
 export async function getTopReferrers(from: string, to: string): Promise<ReferrerCount[]> {
   return apiClient<ReferrerCount[]>(`/admin/analytics/referrers?from=${from}&to=${to}`);
 }
+
+export interface PopularArticle {
+  id: number;
+  title: string;
+  viewCount: number;
+}
+
+export async function getPopularArticles(): Promise<PopularArticle[]> {
+  return apiClient<PopularArticle[]>(`/admin/dashboard/popular-articles`);
+}
