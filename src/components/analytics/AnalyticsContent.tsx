@@ -4,18 +4,15 @@ import { useState, useEffect } from "react";
 import {
   getOverview,
   getDailyPageViews,
-  getTopPages,
   getTopReferrers,
   type AnalyticsOverview,
   type DailyPageViewCount,
-  type PageViewCount,
   type ReferrerCount,
 } from "@/actions/analytics";
 
 interface AnalyticsContentProps {
   initialOverview: AnalyticsOverview | null;
   initialDailyViews: DailyPageViewCount[];
-  initialTopPages: PageViewCount[];
   initialReferrers: ReferrerCount[];
   initialFrom: string;
   initialTo: string;
@@ -24,7 +21,6 @@ interface AnalyticsContentProps {
 export function AnalyticsContent({
   initialOverview,
   initialDailyViews,
-  initialTopPages,
   initialReferrers,
   initialFrom,
   initialTo,
@@ -33,7 +29,6 @@ export function AnalyticsContent({
   const [to, setTo] = useState(initialTo);
   const [overview, setOverview] = useState(initialOverview);
   const [dailyViews, setDailyViews] = useState(initialDailyViews);
-  const [topPages, setTopPages] = useState(initialTopPages);
   const [referrers, setReferrers] = useState(initialReferrers);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -45,15 +40,13 @@ export function AnalyticsContent({
     async function fetchData() {
       setIsLoading(true);
       try {
-        const [o, d, p, r] = await Promise.all([
+        const [o, d, r] = await Promise.all([
           getOverview(from, to),
           getDailyPageViews(from, to),
-          getTopPages(from, to),
           getTopReferrers(from, to),
         ]);
         setOverview(o);
         setDailyViews(d);
-        setTopPages(p);
         setReferrers(r);
       } catch {
         // ignore
@@ -128,31 +121,7 @@ export function AnalyticsContent({
             )}
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="bg-white rounded-lg shadow p-6">
-              <h2 className="text-lg font-semibold mb-4">인기 페이지</h2>
-              {topPages.length === 0 ? (
-                <div className="text-gray-500 text-center py-8">데이터가 없습니다</div>
-              ) : (
-                <table className="w-full">
-                  <thead>
-                    <tr className="text-sm text-gray-500 border-b">
-                      <th className="text-left py-2">경로</th>
-                      <th className="text-right py-2">조회수</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {topPages.slice(0, 10).map((page) => (
-                      <tr key={page.path} className="border-b last:border-0">
-                        <td className="py-2 text-sm truncate max-w-[200px]">{page.path}</td>
-                        <td className="py-2 text-sm text-right font-medium">{page.viewCount.toLocaleString()}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              )}
-            </div>
-
+          <div>
             <div className="bg-white rounded-lg shadow p-6">
               <h2 className="text-lg font-semibold mb-4">유입 경로</h2>
               {referrers.length === 0 ? (
