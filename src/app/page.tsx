@@ -1,20 +1,25 @@
 import Link from "next/link";
 import { getArticles } from "@/actions/articles";
-import { getVisitorStats, getPopularArticles } from "@/actions/analytics";
+import { getVisitorStats, getPopularArticles, getDailyPageViews } from "@/actions/analytics";
 import { StatusBadge } from "@/components/articles/StatusBadge";
 
 export const dynamic = "force-dynamic";
 
 export default async function DashboardPage() {
-  const [statsResult, articlesResult, popularResult] = await Promise.allSettled([
+  const today = new Date().toISOString().split("T")[0];
+  const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split("T")[0];
+
+  const [statsResult, articlesResult, popularResult, dailyResult] = await Promise.allSettled([
     getVisitorStats(),
     getArticles(undefined, 0, 5),
     getPopularArticles(),
+    getDailyPageViews(thirtyDaysAgo, today),
   ]);
 
   const stats = statsResult.status === "fulfilled" ? statsResult.value : null;
   const recentArticles = articlesResult.status === "fulfilled" ? articlesResult.value.content : [];
   const popularArticles = popularResult.status === "fulfilled" ? popularResult.value : [];
+  const dailyViews = dailyResult.status === "fulfilled" ? dailyResult.value : [];
 
   return (
     <div className="p-8">
@@ -24,6 +29,30 @@ export default async function DashboardPage() {
         <StatCard label="어제 방문자" value={stats?.yesterday} />
         <StatCard label="전체 방문자" value={stats?.total} />
       </Link>
+
+      {/* 일별 페이지뷰 스파크라인 */}
+      {dailyViews.length > 0 && (
+        <Link href="/analytics#daily" className="block bg-white rounded-lg shadow p-4 mb-8 hover:shadow-md transition-shadow">
+          <div className="flex items-center justify-between mb-2">
+            <h2 className="text-sm font-semibold text-gray-700">최근 30일 페이지뷰</h2>
+            <span className="text-xs text-blue-600">자세히 →</span>
+          </div>
+          <div className="flex items-end gap-[2px] h-12">
+            {dailyViews.map((day) => {
+              const maxCount = Math.max(...dailyViews.map((d) => d.viewCount), 1);
+              const height = Math.max(2, (day.viewCount / maxCount) * 48);
+              return (
+                <div
+                  key={day.date}
+                  className="flex-1 bg-blue-400 rounded-t-sm"
+                  style={{ height: `${height}px` }}
+                  title={`${day.date}: ${day.viewCount}회`}
+                />
+              );
+            })}
+          </div>
+        </Link>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
         <div className="bg-white rounded-lg shadow">
