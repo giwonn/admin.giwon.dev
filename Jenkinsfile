@@ -27,8 +27,8 @@ pipeline {
         stage('Build & Deploy') {
             steps {
                 script {
-                    sh "docker compose build --no-cache"
-                    sh "docker compose up -d"
+                    sh "docker compose -f docker-compose.yml build --no-cache"
+                    sh "docker compose -f docker-compose.yml up -d"
                 }
             }
         }

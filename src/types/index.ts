@@ -2,3 +2,19 @@
 export interface ApiResponse<T> {
   data: T;
 }
+
+export interface Article {
+  id: number;
+  title: string;
+  content: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface PageResponse<T> {
+  content: T[];
+  totalElements: number;
+  totalPages: number;
+  number: number;
+  size: number;
+}
