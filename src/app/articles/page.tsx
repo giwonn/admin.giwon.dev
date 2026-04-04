@@ -2,49 +2,21 @@ import Link from "next/link";
 import { getArticles } from "@/actions/articles";
 import { DeleteArticleButton } from "@/components/articles/DeleteArticleButton";
 import { StatusBadge } from "@/components/articles/StatusBadge";
-import type { ArticleStatus } from "@/types";
 
 export const dynamic = "force-dynamic";
 
-type FilterTab = "ALL" | ArticleStatus;
-
-const filterTabs: { value: FilterTab; label: string }[] = [
-  { value: "ALL", label: "전체" },
-  { value: "PUBLISHED", label: "발행" },
-  { value: "DRAFT", label: "임시저장" },
-  { value: "SCHEDULED", label: "예약" },
-];
-
-type SearchParams = Promise<{ status?: string; page?: string }>;
+type SearchParams = Promise<{ page?: string }>;
 
 export default async function ArticlesPage({ searchParams }: { searchParams: SearchParams }) {
   const params = await searchParams;
-  const activeTab = (params.status as FilterTab) || "ALL";
   const page = Number(params.page) || 0;
-  const status = activeTab === "ALL" ? undefined : (activeTab as ArticleStatus);
 
-  const articles = await getArticles(status, page);
+  const articles = await getArticles(page);
 
   return (
     <div className="p-8">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">글 목록</h1>
-      </div>
-
-      <div className="flex gap-1 mb-6 bg-gray-100 p-1 rounded-lg w-fit">
-        {filterTabs.map((tab) => (
-          <Link
-            key={tab.value}
-            href={tab.value === "ALL" ? "/articles" : `/articles?status=${tab.value}`}
-            className={`px-4 py-1.5 text-sm font-medium rounded-md transition-colors ${
-              activeTab === tab.value
-                ? "bg-white text-gray-900 shadow-sm"
-                : "text-gray-500 hover:text-gray-700"
-            }`}
-          >
-            {tab.label}
-          </Link>
-        ))}
       </div>
 
       {articles.content.length === 0 ? (
@@ -71,7 +43,7 @@ export default async function ArticlesPage({ searchParams }: { searchParams: Sea
                     </Link>
                   </td>
                   <td className="px-6 py-4">
-                    <StatusBadge status={article.status} />
+                    <StatusBadge article={article} />
                   </td>
                   <td className="px-6 py-4 text-sm text-gray-500">
                     {new Date(article.createdAt).toLocaleDateString("ko-KR")}
@@ -97,7 +69,7 @@ export default async function ArticlesPage({ searchParams }: { searchParams: Sea
               {Array.from({ length: articles.totalPages }, (_, i) => (
                 <Link
                   key={i}
-                  href={`/articles?${status ? `status=${status}&` : ""}page=${i}`}
+                  href={`/articles?page=${i}`}
                   className={`px-3 py-1 rounded text-sm ${
                     i === articles.number
                       ? "bg-blue-600 text-white"

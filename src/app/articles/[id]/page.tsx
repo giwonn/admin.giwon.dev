@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { getArticle } from "@/actions/articles";
 import { DeleteArticleButton } from "@/components/articles/DeleteArticleButton";
-import { PublishButton } from "@/components/articles/PublishButton";
 import { StatusBadge } from "@/components/articles/StatusBadge";
 import { notFound } from "next/navigation";
 
@@ -23,10 +22,9 @@ export default async function ArticleDetailPage({ params }: { params: Params }) 
       <div className="flex justify-between items-center mb-8">
         <div className="flex items-center gap-3">
           <h1 className="text-2xl font-bold">{article.title}</h1>
-          <StatusBadge status={article.status} />
+          <StatusBadge article={article} />
         </div>
         <div className="flex gap-2">
-          {article.status === "DRAFT" && <PublishButton articleId={id} />}
           <Link
             href={`/articles/${id}/edit`}
             className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
@@ -48,7 +46,7 @@ export default async function ArticleDetailPage({ params }: { params: Params }) 
               </div>
               <div>
                 <dt className="text-sm text-gray-500">상태</dt>
-                <dd className="font-medium"><StatusBadge status={article.status} /></dd>
+                <dd className="font-medium"><StatusBadge article={article} /></dd>
               </div>
               <div>
                 <dt className="text-sm text-gray-500">작성일</dt>
@@ -58,19 +56,25 @@ export default async function ArticleDetailPage({ params }: { params: Params }) 
                 <dt className="text-sm text-gray-500">수정일</dt>
                 <dd className="font-medium">{new Date(article.updatedAt).toLocaleDateString("ko-KR")}</dd>
               </div>
-              {article.publishedAt && (
-                <div>
-                  <dt className="text-sm text-gray-500">
-                    {article.status === "SCHEDULED" ? "예약 발행일" : "발행일"}
-                  </dt>
-                  <dd className="font-medium">
-                    {new Date(article.publishedAt).toLocaleString("ko-KR")}
-                  </dd>
-                </div>
-              )}
+              <div>
+                <dt className="text-sm text-gray-500">
+                  {article.scheduled ? "예약 발행일" : "발행일"}
+                </dt>
+                <dd className="font-medium">
+                  {new Date(article.publishedAt).toLocaleString("ko-KR")}
+                </dd>
+              </div>
               <div>
                 <dt className="text-sm text-gray-500">글자 수</dt>
                 <dd className="font-medium">{article.content.length.toLocaleString()}자</dd>
+              </div>
+              <div>
+                <dt className="text-sm text-gray-500">숨김</dt>
+                <dd className="font-medium">{article.hidden ? "예" : "아니오"}</dd>
+              </div>
+              <div>
+                <dt className="text-sm text-gray-500">비밀번호</dt>
+                <dd className="font-medium">{article.passwordProtected ? "설정됨" : "없음"}</dd>
               </div>
             </dl>
           </div>

@@ -2,8 +2,8 @@
 
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
-import { useState, useRef, useCallback } from "react";
-import { createArticle, publishArticle, scheduleArticle } from "@/actions/articles";
+import { useState } from "react";
+import { createArticle } from "@/actions/articles";
 import { PublishPanel } from "@/components/articles/PublishPanel";
 
 const TiptapEditor = dynamic(
@@ -24,84 +24,39 @@ export default function NewArticlePage() {
   const [content, setContent] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved">("idle");
   const [showPublishPanel, setShowPublishPanel] = useState(false);
-  const savedArticleIdRef = useRef<number | null>(null);
 
-  const saveDraft = useCallback(async () => {
+  const handleSave = async (publishedAt: string | undefined, hidden: boolean, password: string | null) => {
     if (!title.trim()) {
       setError("제목을 입력하세요.");
-      return null;
+      return;
     }
 
-    setSaveStatus("saving");
+    setIsLoading(true);
     setError(null);
 
     try {
-      const article = await createArticle(title, content);
-      savedArticleIdRef.current = article.id;
-      setSaveStatus("saved");
-      return article;
+      await createArticle(title, content, publishedAt, hidden, password);
+      router.push("/articles");
     } catch (err) {
       setError(err instanceof Error ? err.message : "저장에 실패했습니다.");
-      setSaveStatus("idle");
-      return null;
-    }
-  }, [title, content]);
-
-  const handleSaveDraft = async () => {
-    setIsLoading(true);
-    try {
-      const article = await saveDraft();
-      if (article) {
-        router.push(`/articles/${article.id}/edit`);
-      }
     } finally {
       setIsLoading(false);
+      setShowPublishPanel(false);
     }
-  };
-
-  const handlePublishNow = async () => {
-    const article = await saveDraft();
-    if (!article) return;
-    await publishArticle(article.id);
-    router.push("/articles");
-  };
-
-  const handleSchedule = async (publishedAt: string) => {
-    const article = await saveDraft();
-    if (!article) return;
-    await scheduleArticle(article.id, publishedAt);
-    router.push("/articles");
   };
 
   return (
     <div className="p-8">
       <div className="flex justify-between items-center mb-8">
-        <div className="flex items-center gap-3">
-          <h1 className="text-2xl font-bold">새 글 작성</h1>
-          {saveStatus === "saving" && (
-            <span className="text-sm text-gray-400">저장 중...</span>
-          )}
-          {saveStatus === "saved" && (
-            <span className="text-sm text-green-500">저장됨</span>
-          )}
-        </div>
-        <div className="flex gap-2">
-          <button
-            onClick={handleSaveDraft}
-            disabled={isLoading}
-            className="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            임시저장
-          </button>
-          <button
-            onClick={() => setShowPublishPanel(true)}
-            className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
-          >
-            발행
-          </button>
-        </div>
+        <h1 className="text-2xl font-bold">새 글 작성</h1>
+        <button
+          onClick={() => setShowPublishPanel(true)}
+          disabled={isLoading}
+          className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors disabled:opacity-50"
+        >
+          저장
+        </button>
       </div>
 
       {error && (
@@ -127,8 +82,7 @@ export default function NewArticlePage() {
       <PublishPanel
         isOpen={showPublishPanel}
         onClose={() => setShowPublishPanel(false)}
-        onPublishNow={handlePublishNow}
-        onSchedule={handleSchedule}
+        onSave={handleSave}
       />
     </div>
   );

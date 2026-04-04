@@ -11,7 +11,7 @@ export default async function DashboardPage() {
 
   const [statsResult, articlesResult, popularResult, dailyResult] = await Promise.allSettled([
     getVisitorStats(),
-    getArticles(undefined, 0, 5),
+    getArticles(0, 5),
     getPopularArticles(),
     getDailyPageViews(thirtyDaysAgo, today),
   ]);
@@ -74,7 +74,7 @@ export default async function DashboardPage() {
                   >
                     <div className="flex items-center gap-3">
                       <span className="font-medium text-gray-900 text-sm">{article.title}</span>
-                      <StatusBadge status={article.status} />
+                      <StatusBadge article={article} />
                     </div>
                     <span className="text-xs text-gray-400">
                       {new Date(article.createdAt).toLocaleDateString("ko-KR")}

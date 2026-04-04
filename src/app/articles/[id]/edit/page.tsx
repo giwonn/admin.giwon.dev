@@ -3,7 +3,7 @@
 import { useRouter, useParams } from "next/navigation";
 import dynamic from "next/dynamic";
 import { useState, useEffect } from "react";
-import { getArticle, updateArticle, publishArticle, scheduleArticle } from "@/actions/articles";
+import { getArticle, updateArticle } from "@/actions/articles";
 import { PublishPanel } from "@/components/articles/PublishPanel";
 import type { Article } from "@/types";
 
@@ -30,7 +30,6 @@ export default function EditArticlePage() {
   const [isLoading, setIsLoading] = useState(false);
   const [isFetching, setIsFetching] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved">("idle");
   const [showPublishPanel, setShowPublishPanel] = useState(false);
 
   useEffect(() => {
@@ -49,46 +48,23 @@ export default function EditArticlePage() {
     fetchArticle();
   }, [id]);
 
-  const handleSaveDraft = async () => {
+  const handleSave = async (publishedAt: string | undefined, hidden: boolean, password: string | null) => {
     if (!title.trim()) {
       setError("제목을 입력하세요.");
       return;
     }
 
     setIsLoading(true);
-    setSaveStatus("saving");
     setError(null);
 
     try {
-      const updated = await updateArticle(id, title, content);
+      const updated = await updateArticle(id, title, content, publishedAt, hidden, password);
       setArticle(updated);
-      setSaveStatus("saved");
+      router.push("/articles");
     } catch (err) {
       setError(err instanceof Error ? err.message : "저장에 실패했습니다.");
-      setSaveStatus("idle");
     } finally {
       setIsLoading(false);
-    }
-  };
-
-  const handlePublishNow = async () => {
-    try {
-      await updateArticle(id, title, content);
-      await publishArticle(id);
-      router.push("/articles");
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "발행에 실패했습니다.");
-      setShowPublishPanel(false);
-    }
-  };
-
-  const handleSchedule = async (publishedAt: string) => {
-    try {
-      await updateArticle(id, title, content);
-      await scheduleArticle(id, publishedAt);
-      router.push("/articles");
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "예약 발행에 실패했습니다.");
       setShowPublishPanel(false);
     }
   };
@@ -102,42 +78,14 @@ export default function EditArticlePage() {
   return (
     <div className="p-8">
       <div className="flex justify-between items-center mb-8">
-        <div className="flex items-center gap-3">
-          <h1 className="text-2xl font-bold">글 수정</h1>
-          {saveStatus === "saving" && (
-            <span className="text-sm text-gray-400">저장 중...</span>
-          )}
-          {saveStatus === "saved" && (
-            <span className="text-sm text-green-500">저장됨</span>
-          )}
-        </div>
-        <div className="flex gap-2">
-          {article?.status === "PUBLISHED" ? (
-            <button
-              onClick={handleSaveDraft}
-              disabled={isLoading}
-              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {isLoading ? "저장 중..." : "저장"}
-            </button>
-          ) : (
-            <>
-              <button
-                onClick={handleSaveDraft}
-                disabled={isLoading}
-                className="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                임시저장
-              </button>
-              <button
-                onClick={() => setShowPublishPanel(true)}
-                className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
-              >
-                발행
-              </button>
-            </>
-          )}
-        </div>
+        <h1 className="text-2xl font-bold">글 수정</h1>
+        <button
+          onClick={() => setShowPublishPanel(true)}
+          disabled={isLoading}
+          className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors disabled:opacity-50"
+        >
+          저장
+        </button>
       </div>
 
       {error && (
@@ -163,8 +111,10 @@ export default function EditArticlePage() {
       <PublishPanel
         isOpen={showPublishPanel}
         onClose={() => setShowPublishPanel(false)}
-        onPublishNow={handlePublishNow}
-        onSchedule={handleSchedule}
+        onSave={handleSave}
+        defaultPublishedAt={article?.publishedAt}
+        defaultHidden={article?.hidden}
+        defaultPassword={article?.password}
       />
     </div>
   );
