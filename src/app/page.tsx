@@ -26,6 +26,14 @@ export default function DashboardPage() {
             <h2 className="text-lg font-semibold mb-2">글 목록</h2>
             <p className="text-gray-600">작성된 글을 확인하고 관리합니다.</p>
           </Link>
+
+          <Link
+            href="/analytics"
+            className="bg-white p-6 rounded-lg shadow hover:shadow-md transition-shadow"
+          >
+            <h2 className="text-lg font-semibold mb-2">분석</h2>
+            <p className="text-gray-600">방문자 통계와 인기 페이지를 확인합니다.</p>
+          </Link>
         </div>
       </main>
     </div>
