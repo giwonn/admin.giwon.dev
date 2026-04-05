@@ -183,6 +183,22 @@ export function MarkdownEditor({ content = "", onChange }: MarkdownEditorProps) 
       const view = editorRef.current?.view;
       if (!view) { syncingRef.current = false; return; }
 
+      const maxScroll = editorScroller.scrollHeight - editorScroller.clientHeight;
+
+      // 맨 위
+      if (editorScroller.scrollTop <= 0) {
+        preview.scrollTop = 0;
+        requestAnimationFrame(() => { syncingRef.current = false; });
+        return;
+      }
+
+      // 맨 아래
+      if (maxScroll > 0 && editorScroller.scrollTop >= maxScroll - 1) {
+        preview.scrollTop = preview.scrollHeight - preview.clientHeight;
+        requestAnimationFrame(() => { syncingRef.current = false; });
+        return;
+      }
+
       // 에디터 뷰포트 상단에 실제로 보이는 라인 번호를 CM에서 직접 가져옴
       const editorRect = editorScroller.getBoundingClientRect();
       const topPos = view.posAtCoords({ x: editorRect.left, y: editorRect.top });
