@@ -52,7 +52,7 @@ const autoCloseCodeBlock = keymap.of([
 // 한국어 키보드 맥에서 ₩ → ` 변환
 const wonToBacktick = EditorView.inputHandler.of((view, from, to, text) => {
   if (text === "₩") {
-    view.dispatch({ changes: { from, to, insert: "`" } });
+    view.dispatch({ changes: { from, to, insert: "`" }, selection: { anchor: from + 1 } });
     return true;
   }
   return false;
