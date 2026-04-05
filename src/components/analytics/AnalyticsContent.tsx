@@ -148,7 +148,7 @@ function DailyLineChart({ data }: { data: DailyPageViewCount[] }) {
   }
 
   const width = 800;
-  const height = 300;
+  const height = 200;
   const paddingLeft = 50;
   const paddingRight = 20;
   const paddingTop = 20;
