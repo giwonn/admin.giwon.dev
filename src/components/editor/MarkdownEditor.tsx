@@ -169,7 +169,7 @@ export function MarkdownEditor({ content = "", onChange }: MarkdownEditorProps) 
     [insertImageMarkdown]
   );
 
-  // 에디터 → 프리뷰 스크롤 동기화
+  // 에디터 스크롤/커서 → 프리뷰 스크롤 동기화
   useEffect(() => {
     const editorScroller = editorRef.current?.view?.scrollDOM;
     const preview = previewRef.current;
@@ -185,6 +185,22 @@ export function MarkdownEditor({ content = "", onChange }: MarkdownEditorProps) 
 
     editorScroller.addEventListener("scroll", handleEditorScroll);
     return () => editorScroller.removeEventListener("scroll", handleEditorScroll);
+  });
+
+  // 커서 이동 시 프리뷰 동기화 (extension으로 등록)
+  const cursorSyncExtension = EditorView.updateListener.of((update) => {
+    if (!update.selectionSet && !update.docChanged) return;
+    const preview = previewRef.current;
+    if (!preview) return;
+
+    const { from } = update.state.selection.main;
+    const line = update.state.doc.lineAt(from);
+    const totalLines = update.state.doc.lines;
+    const ratio = (line.number - 1) / (totalLines - 1 || 1);
+
+    preview.scrollTo({
+      top: ratio * (preview.scrollHeight - preview.clientHeight),
+    });
   });
 
   const eventHandlers = EditorView.domEventHandlers({
@@ -208,6 +224,7 @@ export function MarkdownEditor({ content = "", onChange }: MarkdownEditorProps) 
               markdown({ base: markdownLanguage, codeLanguages: languages }),
               EditorView.lineWrapping,
               wonToBacktick,
+              cursorSyncExtension,
               eventHandlers,
             ]}
             basicSetup={{
