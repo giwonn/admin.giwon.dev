@@ -12,6 +12,19 @@ import type { Root, Element } from "hast";
 import { CodeBlock } from "@/components/mdx/CodeBlock";
 import { CustomContainer } from "@/components/mdx/CustomContainer";
 
+// 블록 요소에 소스 라인 번호 부착 (스크롤 동기화용)
+function rehypeSourceLine() {
+  return (tree: Root) => {
+    visit(tree, "element", (node: Element) => {
+      const blockTags = ["h1", "h2", "h3", "h4", "h5", "h6", "p", "pre", "blockquote", "ul", "ol", "table", "hr", "div"];
+      if (blockTags.includes(node.tagName) && node.position?.start?.line) {
+        node.properties = node.properties || {};
+        node.properties["data-line"] = node.position.start.line;
+      }
+    });
+  };
+}
+
 // blog.giwon.dev와 동일한 rehype 플러그인
 function rehypeMermaid() {
   return (tree: Root) => {
@@ -103,6 +116,7 @@ export function PreviewPane({ content }: PreviewPaneProps) {
           remarkPlugins={[remarkGfm, remarkMath]}
           rehypePlugins={[
             rehypeRaw,
+            rehypeSourceLine,
             rehypeMermaid,
             rehypeHighlight,
             rehypeCodeLanguage,

@@ -170,17 +170,40 @@ export function MarkdownEditor({ content = "", onChange }: MarkdownEditorProps) 
     [insertImageMarkdown]
   );
 
-  // 에디터 스크롤 → 프리뷰 스크롤 동기화
+  // 에디터 스크롤 → 프리뷰 라인 기반 동기화
   useEffect(() => {
     const editorScroller = editorScrollRef.current;
     const preview = previewRef.current;
-    if (!editorScroller || !preview) return;
+    const view = editorRef.current?.view;
+    if (!editorScroller || !preview || !view) return;
 
     const handleEditorScroll = () => {
       if (syncingRef.current) return;
       syncingRef.current = true;
-      const ratio = editorScroller.scrollTop / (editorScroller.scrollHeight - editorScroller.clientHeight || 1);
-      preview.scrollTop = ratio * (preview.scrollHeight - preview.clientHeight);
+
+      // 에디터 뷰포트 상단의 라인 번호 계산
+      const scrollRatio = editorScroller.scrollTop / (editorScroller.scrollHeight - editorScroller.clientHeight || 1);
+      const totalLines = view.state.doc.lines;
+      const topLine = Math.max(1, Math.round(scrollRatio * totalLines));
+
+      // 프리뷰에서 해당 라인에 가장 가까운 요소 찾기
+      const lineElements = preview.querySelectorAll<HTMLElement>("[data-line]");
+      let target: HTMLElement | null = null;
+      for (const el of lineElements) {
+        const line = Number(el.dataset.line);
+        if (line <= topLine) {
+          target = el;
+        } else {
+          break;
+        }
+      }
+
+      if (target) {
+        const previewRect = preview.getBoundingClientRect();
+        const targetRect = target.getBoundingClientRect();
+        preview.scrollTop += targetRect.top - previewRect.top;
+      }
+
       requestAnimationFrame(() => { syncingRef.current = false; });
     };
 
