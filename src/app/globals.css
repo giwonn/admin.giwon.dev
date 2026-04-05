@@ -244,6 +244,7 @@
 .prose pre code {
   display: block;
   padding: 1rem !important;
+  padding-right: 3rem !important;
   overflow-x: auto;
   color: #abb2bf;
 }
