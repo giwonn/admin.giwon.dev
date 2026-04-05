@@ -4,9 +4,11 @@ import { useState, useEffect } from "react";
 import {
   getOverview,
   getDailyPageViews,
+  getTopPages,
   getTopReferrers,
   type AnalyticsOverview,
   type DailyPageViewCount,
+  type PageViewCount,
   type ReferrerCount,
 } from "@/actions/analytics";
 import { VisitorMap } from "./VisitorMap";
@@ -14,6 +16,7 @@ import { VisitorMap } from "./VisitorMap";
 interface AnalyticsContentProps {
   initialOverview: AnalyticsOverview | null;
   initialDailyViews: DailyPageViewCount[];
+  initialTopPages: PageViewCount[];
   initialReferrers: ReferrerCount[];
   initialFrom: string;
   initialTo: string;
@@ -22,6 +25,7 @@ interface AnalyticsContentProps {
 export function AnalyticsContent({
   initialOverview,
   initialDailyViews,
+  initialTopPages,
   initialReferrers,
   initialFrom,
   initialTo,
@@ -32,6 +36,7 @@ export function AnalyticsContent({
   const [appliedTo, setAppliedTo] = useState(initialTo);
   const [overview, setOverview] = useState(initialOverview);
   const [dailyViews, setDailyViews] = useState(initialDailyViews);
+  const [topPages, setTopPages] = useState(initialTopPages);
   const [referrers, setReferrers] = useState(initialReferrers);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -46,13 +51,15 @@ export function AnalyticsContent({
     setAppliedTo(clampedTo);
     setIsLoading(true);
     try {
-      const [o, d, r] = await Promise.all([
+      const [o, d, p, r] = await Promise.all([
         getOverview(clampedFrom, clampedTo),
         getDailyPageViews(clampedFrom, clampedTo),
+        getTopPages(clampedFrom, clampedTo),
         getTopReferrers(clampedFrom, clampedTo),
       ]);
       setOverview(o);
       setDailyViews(d);
+      setTopPages(p);
       setReferrers(r);
     } catch {
       // ignore
@@ -113,6 +120,32 @@ export function AnalyticsContent({
           <div id="daily" className="bg-white rounded-lg shadow p-6">
             <h2 className="text-lg font-semibold mb-4">일별 페이지뷰</h2>
             <DailyLineChart data={dailyViews} />
+          </div>
+
+          <div id="popular" className="bg-white rounded-lg shadow p-6">
+            <h2 className="text-lg font-semibold mb-4">인기 페이지</h2>
+            {topPages.length === 0 ? (
+              <div className="text-gray-500 text-center py-8">데이터가 없습니다</div>
+            ) : (
+              <table className="w-full">
+                <thead>
+                  <tr className="text-sm text-gray-500 border-b">
+                    <th className="text-left py-2">#</th>
+                    <th className="text-left py-2">경로</th>
+                    <th className="text-right py-2">조회수</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {topPages.slice(0, 10).map((page, i) => (
+                    <tr key={page.path} className="border-b last:border-0">
+                      <td className="py-2 text-sm text-gray-400 w-8">{i + 1}</td>
+                      <td className="py-2 text-sm truncate max-w-[300px]">{page.path}</td>
+                      <td className="py-2 text-sm text-right font-medium">{page.viewCount.toLocaleString()}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
           </div>
 
           <div id="referrers">
