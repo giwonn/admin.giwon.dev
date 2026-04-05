@@ -225,6 +225,19 @@
   --sidebar-ring: oklch(0.556 0 0);
 }
 
+/* 프리뷰 인라인 코드 스타일 */
+.prose :not(pre) > code {
+  background-color: #f3f4f6;
+  padding: 0.15rem 0.4rem;
+  border-radius: 0.25rem;
+  font-size: 0.875em;
+  font-weight: 400;
+}
+.prose :not(pre) > code::before,
+.prose :not(pre) > code::after {
+  content: none;
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
