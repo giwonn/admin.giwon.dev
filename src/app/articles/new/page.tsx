@@ -6,12 +6,12 @@ import { useState } from "react";
 import { createArticle } from "@/actions/articles";
 import { PublishPanel } from "@/components/articles/PublishPanel";
 
-const TiptapEditor = dynamic(
-  () => import("@/components/editor/TiptapEditor").then((mod) => mod.TiptapEditor),
+const MarkdownEditor = dynamic(
+  () => import("@/components/editor/MarkdownEditor").then((mod) => mod.MarkdownEditor),
   {
     ssr: false,
     loading: () => (
-      <div className="border border-gray-300 rounded-lg bg-white min-h-[400px] flex items-center justify-center text-gray-400">
+      <div className="border border-gray-300 rounded-lg bg-white min-h-[500px] flex items-center justify-center text-gray-400">
         에디터 로딩 중...
       </div>
     ),
@@ -76,7 +76,7 @@ export default function NewArticlePage() {
           />
         </div>
 
-        <TiptapEditor content={content} onChange={setContent} />
+        <MarkdownEditor content={content} onChange={setContent} />
       </form>
 
       <PublishPanel
