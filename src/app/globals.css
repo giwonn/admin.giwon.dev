@@ -225,6 +225,12 @@
   --sidebar-ring: oklch(0.556 0 0);
 }
 
+/* 프리뷰 코드블록 - 언어 미지정 시에도 배경 적용 */
+.prose pre {
+  background-color: #282c34;
+  color: #abb2bf;
+}
+
 /* 프리뷰 인라인 코드 스타일 */
 .prose :not(pre) > code {
   background-color: #f3f4f6;
