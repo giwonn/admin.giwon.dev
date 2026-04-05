@@ -183,10 +183,10 @@ export function MarkdownEditor({ content = "", onChange }: MarkdownEditorProps) 
             value={value}
             onChange={handleChange}
             extensions={[
+              autoCloseCodeBlock,
+              markdownKeymap,
               markdown({ base: markdownLanguage, codeLanguages: languages }),
               EditorView.lineWrapping,
-              markdownKeymap,
-              autoCloseCodeBlock,
               wonToBacktick,
               eventHandlers,
             ]}
