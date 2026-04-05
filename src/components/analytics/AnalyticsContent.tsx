@@ -137,6 +137,16 @@ export function AnalyticsContent({
 }
 
 function DailyLineChart({ data }: { data: DailyPageViewCount[] }) {
+  // 최근 7일 고정 (오늘이 가장 오른쪽)
+  const days: DailyPageViewCount[] = [];
+  const dataMap = new Map(data.map((d) => [d.date, d.viewCount]));
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date();
+    d.setDate(d.getDate() - i);
+    const dateStr = d.toISOString().split("T")[0];
+    days.push({ date: dateStr, viewCount: dataMap.get(dateStr) ?? 0 });
+  }
+
   const width = 800;
   const height = 300;
   const paddingLeft = 50;
@@ -147,7 +157,7 @@ function DailyLineChart({ data }: { data: DailyPageViewCount[] }) {
   const chartW = width - paddingLeft - paddingRight;
   const chartH = height - paddingTop - paddingBottom;
 
-  const maxCount = data.length > 0 ? Math.max(...data.map((d) => d.viewCount), 1) : 1;
+  const maxCount = Math.max(...days.map((d) => d.viewCount), 1);
 
   // y축 눈금 계산
   const yTicks: number[] = [];
@@ -159,29 +169,22 @@ function DailyLineChart({ data }: { data: DailyPageViewCount[] }) {
     if (yTicks[yTicks.length - 1] < maxCount) yTicks.push(maxCount);
   }
 
-  const getX = (i: number) =>
-    paddingLeft + (data.length <= 1 ? chartW / 2 : (i / (data.length - 1)) * chartW);
+  const getX = (i: number) => paddingLeft + (i / (days.length - 1)) * chartW;
   const getY = (v: number) => paddingTop + chartH - (v / maxCount) * chartH;
 
-  // 라인 path
-  const linePath =
-    data.length > 0
-      ? data.map((d, i) => `${i === 0 ? "M" : "L"} ${getX(i)} ${getY(d.viewCount)}`).join(" ")
-      : "";
-
-  // area path (x축에 붙음)
-  const areaPath =
-    data.length > 0
-      ? linePath +
-        ` L ${getX(data.length - 1)} ${getY(0)} L ${getX(0)} ${getY(0)} Z`
-      : "";
-
-  // x축 라벨 (너무 많으면 일부만)
-  const labelInterval = data.length <= 10 ? 1 : Math.ceil(data.length / 8);
+  const linePath = days.map((d, i) => `${i === 0 ? "M" : "L"} ${getX(i)} ${getY(d.viewCount)}`).join(" ");
+  const areaPath = linePath + ` L ${getX(days.length - 1)} ${getY(0)} L ${getX(0)} ${getY(0)} Z`;
 
   return (
     <div className="w-full overflow-x-auto">
       <svg viewBox={`0 0 ${width} ${height}`} className="w-full min-w-[500px]" preserveAspectRatio="xMidYMid meet">
+        <defs>
+          <linearGradient id="areaGradient" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#3b82f6" stopOpacity="0.2" />
+            <stop offset="100%" stopColor="#3b82f6" stopOpacity="0" />
+          </linearGradient>
+        </defs>
+
         {/* y축 눈금 & 가이드라인 */}
         {yTicks.map((tick) => (
           <g key={tick}>
@@ -205,56 +208,31 @@ function DailyLineChart({ data }: { data: DailyPageViewCount[] }) {
           </g>
         ))}
 
-        {data.length > 0 && (
-          <>
-            {/* area fill */}
-            <path d={areaPath} fill="url(#areaGradient)" />
-            <defs>
-              <linearGradient id="areaGradient" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#3b82f6" stopOpacity="0.2" />
-                <stop offset="100%" stopColor="#3b82f6" stopOpacity="0" />
-              </linearGradient>
-            </defs>
-            {/* line */}
-            <path d={linePath} fill="none" stroke="#3b82f6" strokeWidth="2" strokeLinejoin="round" />
-            {/* dots */}
-            {data.map((d, i) => (
-              <g key={d.date}>
-                <circle cx={getX(i)} cy={getY(d.viewCount)} r="3" fill="#3b82f6" />
-                <title>{`${d.date}: ${d.viewCount}회`}</title>
-              </g>
-            ))}
-          </>
-        )}
+        {/* area fill */}
+        <path d={areaPath} fill="url(#areaGradient)" />
+        {/* line */}
+        <path d={linePath} fill="none" stroke="#3b82f6" strokeWidth="2" strokeLinejoin="round" />
+        {/* dots */}
+        {days.map((d, i) => (
+          <g key={d.date}>
+            <circle cx={getX(i)} cy={getY(d.viewCount)} r="3" fill="#3b82f6" />
+            <title>{`${d.date}: ${d.viewCount}회`}</title>
+          </g>
+        ))}
 
-        {/* x축 라벨 */}
-        {data.map((d, i) =>
-          i % labelInterval === 0 || i === data.length - 1 ? (
-            <text
-              key={d.date}
-              x={getX(i)}
-              y={height - paddingBottom + 20}
-              textAnchor="middle"
-              className="fill-gray-400"
-              fontSize="10"
-            >
-              {d.date.slice(5)}
-            </text>
-          ) : null,
-        )}
-
-        {/* 데이터 없을 때 */}
-        {data.length === 0 && (
+        {/* x축 라벨 (7일이니 전부 표시) */}
+        {days.map((d, i) => (
           <text
-            x={width / 2}
-            y={height / 2}
+            key={d.date}
+            x={getX(i)}
+            y={height - paddingBottom + 20}
             textAnchor="middle"
             className="fill-gray-400"
-            fontSize="14"
+            fontSize="10"
           >
-            데이터가 없습니다
+            {d.date.slice(5)}
           </text>
-        )}
+        ))}
       </svg>
     </div>
   );
