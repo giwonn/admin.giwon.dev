@@ -1,7 +1,10 @@
 import Link from "next/link";
+import { ExternalLink } from "lucide-react";
 import { getArticles } from "@/actions/articles";
 import { DeleteArticleButton } from "@/components/articles/DeleteArticleButton";
 import { StatusBadge } from "@/components/articles/StatusBadge";
+
+const BLOG_URL = process.env.BLOG_URL || "https://blog.giwon.dev";
 
 export const dynamic = "force-dynamic";
 
@@ -38,9 +41,22 @@ export default async function ArticlesPage({ searchParams }: { searchParams: Sea
               {articles.content.map((article) => (
                 <tr key={article.id} className="hover:bg-gray-50">
                   <td className="px-6 py-4">
-                    <Link href={`/articles/${article.id}`} className="text-blue-600 hover:underline">
-                      {article.title}
-                    </Link>
+                    <div className="flex items-center gap-2">
+                      <Link href={`/articles/${article.id}`} className="text-blue-600 hover:underline">
+                        {article.title}
+                      </Link>
+                      {article.visibleOnBlog && (
+                        <a
+                          href={`${BLOG_URL}/articles/${article.id}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-gray-400 hover:text-gray-600 transition-colors"
+                          title="블로그에서 보기"
+                        >
+                          <ExternalLink size={14} />
+                        </a>
+                      )}
+                    </div>
                   </td>
                   <td className="px-6 py-4">
                     <StatusBadge article={article} />
