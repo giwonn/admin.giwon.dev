@@ -79,13 +79,6 @@ export default async function ArticleDetailPage({ params }: { params: Params }) 
             </dl>
           </div>
 
-          <div className="bg-white rounded-lg shadow p-6">
-            <h2 className="text-lg font-semibold mb-4">본문 미리보기</h2>
-            <div className="prose prose-sm max-w-none text-gray-700 whitespace-pre-wrap">
-              {article.content.substring(0, 500)}
-              {article.content.length > 500 && "..."}
-            </div>
-          </div>
         </div>
 
         <div className="space-y-6">

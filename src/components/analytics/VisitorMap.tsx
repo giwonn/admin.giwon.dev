@@ -11,11 +11,14 @@ interface VisitorMapProps {
 
 export function VisitorMap({ from, to }: VisitorMapProps) {
   const [locations, setLocations] = useState<VisitorLocation[]>([]);
-  const [MapComponent, setMapComponent] = useState<React.ComponentType<{ locations: VisitorLocation[] }> | null>(null);
+  const [MapComponent, setMapComponent] = useState<React.ComponentType<{
+    locations: VisitorLocation[];
+    selectedIp?: string | null;
+  }> | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [selectedIp, setSelectedIp] = useState<string | null>(null);
 
   useEffect(() => {
-    // Leaflet은 SSR에서 window 접근 에러나서 dynamic import
     import("./VisitorMapLeaflet").then((mod) => {
       setMapComponent(() => mod.VisitorMapLeaflet);
     });
@@ -46,12 +49,8 @@ export function VisitorMap({ from, to }: VisitorMapProps) {
             <div className="h-full flex items-center justify-center text-gray-400">
               {isLoading ? "불러오는 중..." : "지도 로딩 중..."}
             </div>
-          ) : locations.length === 0 ? (
-            <div className="h-full flex items-center justify-center text-gray-400">
-              위치 데이터가 없습니다
-            </div>
           ) : (
-            <MapComponent locations={locations} />
+            <MapComponent locations={locations} selectedIp={selectedIp} />
           )}
         </div>
       </div>
@@ -74,8 +73,14 @@ export function VisitorMap({ from, to }: VisitorMapProps) {
             </thead>
             <tbody>
               {locations.map((loc) => (
-                <tr key={loc.ipAddress} className="border-b last:border-0">
-                  <td className="py-2 text-sm font-mono">{loc.ipAddress}</td>
+                <tr
+                  key={loc.ipAddress}
+                  className={`border-b last:border-0 cursor-pointer transition-colors hover:bg-blue-50 ${
+                    selectedIp === loc.ipAddress ? "bg-blue-50" : ""
+                  }`}
+                  onClick={() => setSelectedIp(loc.ipAddress)}
+                >
+                  <td className="py-2 text-sm font-mono text-blue-600">{loc.ipAddress}</td>
                   <td className="py-2 text-sm text-gray-600">
                     {[loc.city, loc.country].filter(Boolean).join(", ") || "-"}
                   </td>

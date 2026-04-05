@@ -100,26 +100,7 @@ export function AnalyticsContent({
 
           <div id="daily" className="bg-white rounded-lg shadow p-6">
             <h2 className="text-lg font-semibold mb-4">일별 페이지뷰</h2>
-            {dailyViews.length === 0 ? (
-              <div className="text-gray-500 text-center py-8">데이터가 없습니다</div>
-            ) : (
-              <div className="space-y-1">
-                {dailyViews.map((day) => (
-                  <div key={day.date} className="flex items-center gap-3">
-                    <span className="text-sm text-gray-500 w-24 shrink-0">{day.date}</span>
-                    <div className="flex-1 bg-gray-100 rounded-full h-5 overflow-hidden">
-                      <div
-                        className="bg-blue-500 h-full rounded-full"
-                        style={{
-                          width: `${Math.min(100, (day.viewCount / Math.max(...dailyViews.map((d) => d.viewCount))) * 100)}%`,
-                        }}
-                      />
-                    </div>
-                    <span className="text-sm font-medium w-12 text-right">{day.viewCount}</span>
-                  </div>
-                ))}
-              </div>
-            )}
+            <DailyLineChart data={dailyViews} />
           </div>
 
           <div id="referrers">
@@ -152,5 +133,129 @@ export function AnalyticsContent({
         </div>
       )}
     </>
+  );
+}
+
+function DailyLineChart({ data }: { data: DailyPageViewCount[] }) {
+  const width = 800;
+  const height = 300;
+  const paddingLeft = 50;
+  const paddingRight = 20;
+  const paddingTop = 20;
+  const paddingBottom = 50;
+
+  const chartW = width - paddingLeft - paddingRight;
+  const chartH = height - paddingTop - paddingBottom;
+
+  const maxCount = data.length > 0 ? Math.max(...data.map((d) => d.viewCount), 1) : 1;
+
+  // y축 눈금 계산
+  const yTicks: number[] = [];
+  if (maxCount <= 5) {
+    for (let i = 0; i <= maxCount; i++) yTicks.push(i);
+  } else {
+    const step = Math.ceil(maxCount / 5);
+    for (let i = 0; i <= maxCount; i += step) yTicks.push(i);
+    if (yTicks[yTicks.length - 1] < maxCount) yTicks.push(maxCount);
+  }
+
+  const getX = (i: number) =>
+    paddingLeft + (data.length <= 1 ? chartW / 2 : (i / (data.length - 1)) * chartW);
+  const getY = (v: number) => paddingTop + chartH - (v / maxCount) * chartH;
+
+  // 라인 path
+  const linePath =
+    data.length > 0
+      ? data.map((d, i) => `${i === 0 ? "M" : "L"} ${getX(i)} ${getY(d.viewCount)}`).join(" ")
+      : "";
+
+  // area path (x축에 붙음)
+  const areaPath =
+    data.length > 0
+      ? linePath +
+        ` L ${getX(data.length - 1)} ${getY(0)} L ${getX(0)} ${getY(0)} Z`
+      : "";
+
+  // x축 라벨 (너무 많으면 일부만)
+  const labelInterval = data.length <= 10 ? 1 : Math.ceil(data.length / 8);
+
+  return (
+    <div className="w-full overflow-x-auto">
+      <svg viewBox={`0 0 ${width} ${height}`} className="w-full min-w-[500px]" preserveAspectRatio="xMidYMid meet">
+        {/* y축 눈금 & 가이드라인 */}
+        {yTicks.map((tick) => (
+          <g key={tick}>
+            <line
+              x1={paddingLeft}
+              y1={getY(tick)}
+              x2={width - paddingRight}
+              y2={getY(tick)}
+              stroke="#e5e7eb"
+              strokeDasharray={tick === 0 ? "0" : "4 2"}
+            />
+            <text
+              x={paddingLeft - 8}
+              y={getY(tick) + 4}
+              textAnchor="end"
+              className="fill-gray-400"
+              fontSize="11"
+            >
+              {tick}
+            </text>
+          </g>
+        ))}
+
+        {data.length > 0 && (
+          <>
+            {/* area fill */}
+            <path d={areaPath} fill="url(#areaGradient)" />
+            <defs>
+              <linearGradient id="areaGradient" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#3b82f6" stopOpacity="0.2" />
+                <stop offset="100%" stopColor="#3b82f6" stopOpacity="0" />
+              </linearGradient>
+            </defs>
+            {/* line */}
+            <path d={linePath} fill="none" stroke="#3b82f6" strokeWidth="2" strokeLinejoin="round" />
+            {/* dots */}
+            {data.map((d, i) => (
+              <g key={d.date}>
+                <circle cx={getX(i)} cy={getY(d.viewCount)} r="3" fill="#3b82f6" />
+                <title>{`${d.date}: ${d.viewCount}회`}</title>
+              </g>
+            ))}
+          </>
+        )}
+
+        {/* x축 라벨 */}
+        {data.map((d, i) =>
+          i % labelInterval === 0 || i === data.length - 1 ? (
+            <text
+              key={d.date}
+              x={getX(i)}
+              y={height - paddingBottom + 20}
+              textAnchor="middle"
+              className="fill-gray-400"
+              fontSize="10"
+            >
+              {d.date.slice(5)}
+            </text>
+          ) : null,
+        )}
+
+        {/* 데이터 없을 때 */}
+        {data.length === 0 && (
+          <text
+            x={width / 2}
+            y={height / 2}
+            textAnchor="middle"
+            className="fill-gray-400"
+            fontSize="14"
+          >
+            데이터가 없습니다
+          </text>
+        )}
+      </svg>
+    </div>
   );
 }
