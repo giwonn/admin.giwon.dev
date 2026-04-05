@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import {
   getOverview,
   getDailyPageViews,
@@ -12,6 +12,7 @@ import {
   type ReferrerCount,
 } from "@/actions/analytics";
 import { VisitorMap } from "./VisitorMap";
+import { DateRangePicker } from "@/components/ui/date-range-picker";
 
 interface AnalyticsContentProps {
   initialOverview: AnalyticsOverview | null;
@@ -30,8 +31,6 @@ export function AnalyticsContent({
   initialFrom,
   initialTo,
 }: AnalyticsContentProps) {
-  const [from, setFrom] = useState(initialFrom);
-  const [to, setTo] = useState(initialTo);
   const [appliedFrom, setAppliedFrom] = useState(initialFrom);
   const [appliedTo, setAppliedTo] = useState(initialTo);
   const [overview, setOverview] = useState(initialOverview);
@@ -40,22 +39,22 @@ export function AnalyticsContent({
   const [referrers, setReferrers] = useState(initialReferrers);
   const [isLoading, setIsLoading] = useState(false);
 
-  const isDirty = from !== appliedFrom || to !== appliedTo;
+  function formatDate(d: Date) {
+    return d.toISOString().split("T")[0];
+  }
 
-  async function handleSearch() {
-    const clampedFrom = from.slice(0, 10);
-    const clampedTo = to.slice(0, 10);
-    setFrom(clampedFrom);
-    setTo(clampedTo);
-    setAppliedFrom(clampedFrom);
-    setAppliedTo(clampedTo);
+  async function handleDateChange(range: { from: Date; to: Date }) {
+    const fromStr = formatDate(range.from);
+    const toStr = formatDate(range.to);
+    setAppliedFrom(fromStr);
+    setAppliedTo(toStr);
     setIsLoading(true);
     try {
       const [o, d, p, r] = await Promise.all([
-        getOverview(clampedFrom, clampedTo),
-        getDailyPageViews(clampedFrom, clampedTo),
-        getTopPages(clampedFrom, clampedTo),
-        getTopReferrers(clampedFrom, clampedTo),
+        getOverview(fromStr, toStr),
+        getDailyPageViews(fromStr, toStr),
+        getTopPages(fromStr, toStr),
+        getTopReferrers(fromStr, toStr),
       ]);
       setOverview(o);
       setDailyViews(d);
@@ -72,30 +71,11 @@ export function AnalyticsContent({
     <>
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-2xl font-bold">분석</h1>
-        <div className="flex items-center gap-2">
-          <input
-            type="date"
-            value={from}
-            max={to}
-            onChange={(e) => setFrom(e.target.value)}
-            className="px-3 py-1.5 border border-gray-300 rounded-md text-sm"
-          />
-          <span className="text-gray-500">~</span>
-          <input
-            type="date"
-            value={to}
-            min={from}
-            onChange={(e) => setTo(e.target.value)}
-            className="px-3 py-1.5 border border-gray-300 rounded-md text-sm"
-          />
-          <button
-            onClick={handleSearch}
-            disabled={!isDirty || isLoading}
-            className="px-4 py-1.5 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-          >
-            확인
-          </button>
-        </div>
+        <DateRangePicker
+          from={new Date(appliedFrom + "T00:00:00")}
+          to={new Date(appliedTo + "T00:00:00")}
+          onChange={handleDateChange}
+        />
       </div>
 
       {isLoading ? (
