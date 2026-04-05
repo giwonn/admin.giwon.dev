@@ -29,6 +29,25 @@ const markdownKeymap = keymap.of([
   { key: "Mod-e", run: (view) => wrapSelection(view, "`", "`") },
 ]);
 
+// ``` 입력 후 Enter → 자동으로 닫는 ``` 삽입
+const autoCloseCodeBlock = keymap.of([
+  {
+    key: "Enter",
+    run: (view) => {
+      const { from } = view.state.selection.main;
+      const line = view.state.doc.lineAt(from);
+      if (/^```\w*$/.test(line.text)) {
+        view.dispatch({
+          changes: { from, insert: "\n\n```" },
+          selection: { anchor: from + 1 },
+        });
+        return true;
+      }
+      return false;
+    },
+  },
+]);
+
 // 한국어 키보드 맥에서 ₩ → ` 변환
 const wonToBacktick = EditorView.inputHandler.of((view, from, to, text) => {
   if (text === "₩") {
@@ -166,6 +185,7 @@ export function MarkdownEditor({ content = "", onChange }: MarkdownEditorProps) 
               markdown({ base: markdownLanguage, codeLanguages: languages }),
               EditorView.lineWrapping,
               markdownKeymap,
+              autoCloseCodeBlock,
               wonToBacktick,
               eventHandlers,
             ]}
