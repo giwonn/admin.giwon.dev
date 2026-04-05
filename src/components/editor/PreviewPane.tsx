@@ -6,6 +6,7 @@ import remarkMath from "remark-math";
 import rehypeHighlight from "rehype-highlight";
 import rehypeKatex from "rehype-katex";
 import rehypeSlug from "rehype-slug";
+import rehypeRaw from "rehype-raw";
 import { visit } from "unist-util-visit";
 import type { Root, Element } from "hast";
 import { CodeBlock } from "@/components/mdx/CodeBlock";
@@ -80,6 +81,7 @@ export function PreviewPane({ content }: PreviewPaneProps) {
         <ReactMarkdown
           remarkPlugins={[remarkGfm, remarkMath]}
           rehypePlugins={[
+            rehypeRaw,
             rehypeMermaid,
             rehypeHighlight,
             rehypeCodeLanguage,
