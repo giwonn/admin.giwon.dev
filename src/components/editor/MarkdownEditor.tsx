@@ -66,6 +66,7 @@ interface MarkdownEditorProps {
 export function MarkdownEditor({ content = "", onChange }: MarkdownEditorProps) {
   const [value, setValue] = useState(content);
   const editorRef = useRef<ReactCodeMirrorRef>(null);
+  const editorScrollRef = useRef<HTMLDivElement>(null);
   const previewRef = useRef<HTMLDivElement>(null);
   const syncingRef = useRef(false);
 
@@ -169,9 +170,9 @@ export function MarkdownEditor({ content = "", onChange }: MarkdownEditorProps) 
     [insertImageMarkdown]
   );
 
-  // 에디터 스크롤/커서 → 프리뷰 스크롤 동기화
+  // 에디터 스크롤 → 프리뷰 스크롤 동기화
   useEffect(() => {
-    const editorScroller = editorRef.current?.view?.scrollDOM;
+    const editorScroller = editorScrollRef.current;
     const preview = previewRef.current;
     if (!editorScroller || !preview) return;
 
@@ -187,33 +188,17 @@ export function MarkdownEditor({ content = "", onChange }: MarkdownEditorProps) 
     return () => editorScroller.removeEventListener("scroll", handleEditorScroll);
   });
 
-  // 커서 이동 시 프리뷰 동기화 (extension으로 등록)
-  const cursorSyncExtension = EditorView.updateListener.of((update) => {
-    if (!update.selectionSet && !update.docChanged) return;
-    const preview = previewRef.current;
-    if (!preview) return;
-
-    const { from } = update.state.selection.main;
-    const line = update.state.doc.lineAt(from);
-    const totalLines = update.state.doc.lines;
-    const ratio = (line.number - 1) / (totalLines - 1 || 1);
-
-    preview.scrollTo({
-      top: ratio * (preview.scrollHeight - preview.clientHeight),
-    });
-  });
-
   const eventHandlers = EditorView.domEventHandlers({
     paste: (event) => handlePaste(event),
     drop: (event) => handleDrop(event),
   });
 
   return (
-    <div className="border border-gray-300 rounded-lg overflow-hidden bg-white flex flex-col">
+    <div className="border border-gray-300 rounded-lg overflow-hidden bg-white flex flex-col h-[calc(100vh-200px)] min-h-[500px]">
       <Toolbar editorView={getEditorView()} onImageUpload={handleImageUploadClick} />
 
-      <div className="flex flex-1 min-h-[500px]">
-        <div className="flex-1 overflow-y-auto border-r border-gray-200 max-lg:border-r-0">
+      <div className="flex flex-1 overflow-hidden">
+        <div className="flex-1 overflow-y-auto border-r border-gray-200 max-lg:border-r-0" ref={editorScrollRef}>
           <CodeMirror
             ref={editorRef}
             value={value}
@@ -224,7 +209,6 @@ export function MarkdownEditor({ content = "", onChange }: MarkdownEditorProps) 
               markdown({ base: markdownLanguage, codeLanguages: languages }),
               EditorView.lineWrapping,
               wonToBacktick,
-              cursorSyncExtension,
               eventHandlers,
             ]}
             basicSetup={{
@@ -234,7 +218,7 @@ export function MarkdownEditor({ content = "", onChange }: MarkdownEditorProps) 
               closeBrackets: false,
             }}
             placeholder="마크다운을 입력하세요..."
-            className="min-h-[500px]"
+            className="h-full"
           />
         </div>
 
