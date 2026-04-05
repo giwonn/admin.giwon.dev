@@ -97,7 +97,7 @@ interface PreviewPaneProps {
 
 export function PreviewPane({ content }: PreviewPaneProps) {
   return (
-    <div className="h-full overflow-y-auto p-6 bg-white">
+    <div className="p-6 bg-white">
       <article className="prose dark:prose-invert max-w-none">
         <ReactMarkdown
           remarkPlugins={[remarkGfm, remarkMath]}

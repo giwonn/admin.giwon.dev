@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useRef, useState, useEffect } from "react";
 import CodeMirror, { ReactCodeMirrorRef } from "@uiw/react-codemirror";
 import { markdown, markdownLanguage } from "@codemirror/lang-markdown";
 import { languages } from "@codemirror/language-data";
@@ -66,6 +66,8 @@ interface MarkdownEditorProps {
 export function MarkdownEditor({ content = "", onChange }: MarkdownEditorProps) {
   const [value, setValue] = useState(content);
   const editorRef = useRef<ReactCodeMirrorRef>(null);
+  const previewRef = useRef<HTMLDivElement>(null);
+  const syncingRef = useRef(false);
 
   const handleChange = useCallback(
     (val: string) => {
@@ -167,6 +169,24 @@ export function MarkdownEditor({ content = "", onChange }: MarkdownEditorProps) 
     [insertImageMarkdown]
   );
 
+  // 에디터 → 프리뷰 스크롤 동기화
+  useEffect(() => {
+    const editorScroller = editorRef.current?.view?.scrollDOM;
+    const preview = previewRef.current;
+    if (!editorScroller || !preview) return;
+
+    const handleEditorScroll = () => {
+      if (syncingRef.current) return;
+      syncingRef.current = true;
+      const ratio = editorScroller.scrollTop / (editorScroller.scrollHeight - editorScroller.clientHeight || 1);
+      preview.scrollTop = ratio * (preview.scrollHeight - preview.clientHeight);
+      requestAnimationFrame(() => { syncingRef.current = false; });
+    };
+
+    editorScroller.addEventListener("scroll", handleEditorScroll);
+    return () => editorScroller.removeEventListener("scroll", handleEditorScroll);
+  });
+
   const eventHandlers = EditorView.domEventHandlers({
     paste: (event) => handlePaste(event),
     drop: (event) => handleDrop(event),
@@ -201,7 +221,7 @@ export function MarkdownEditor({ content = "", onChange }: MarkdownEditorProps) 
           />
         </div>
 
-        <div className="flex-1 hidden lg:block">
+        <div className="flex-1 hidden lg:block overflow-y-auto" ref={previewRef}>
           <PreviewPane content={value} />
         </div>
       </div>
