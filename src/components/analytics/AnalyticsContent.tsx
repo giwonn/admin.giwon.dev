@@ -28,35 +28,38 @@ export function AnalyticsContent({
 }: AnalyticsContentProps) {
   const [from, setFrom] = useState(initialFrom);
   const [to, setTo] = useState(initialTo);
+  const [appliedFrom, setAppliedFrom] = useState(initialFrom);
+  const [appliedTo, setAppliedTo] = useState(initialTo);
   const [overview, setOverview] = useState(initialOverview);
   const [dailyViews, setDailyViews] = useState(initialDailyViews);
   const [referrers, setReferrers] = useState(initialReferrers);
   const [isLoading, setIsLoading] = useState(false);
 
-  const isDateChanged = from !== initialFrom || to !== initialTo;
+  const isDirty = from !== appliedFrom || to !== appliedTo;
 
-  useEffect(() => {
-    if (!isDateChanged) return;
-
-    async function fetchData() {
-      setIsLoading(true);
-      try {
-        const [o, d, r] = await Promise.all([
-          getOverview(from, to),
-          getDailyPageViews(from, to),
-          getTopReferrers(from, to),
-        ]);
-        setOverview(o);
-        setDailyViews(d);
-        setReferrers(r);
-      } catch {
-        // ignore
-      } finally {
-        setIsLoading(false);
-      }
+  async function handleSearch() {
+    const clampedFrom = from.slice(0, 10);
+    const clampedTo = to.slice(0, 10);
+    setFrom(clampedFrom);
+    setTo(clampedTo);
+    setAppliedFrom(clampedFrom);
+    setAppliedTo(clampedTo);
+    setIsLoading(true);
+    try {
+      const [o, d, r] = await Promise.all([
+        getOverview(clampedFrom, clampedTo),
+        getDailyPageViews(clampedFrom, clampedTo),
+        getTopReferrers(clampedFrom, clampedTo),
+      ]);
+      setOverview(o);
+      setDailyViews(d);
+      setReferrers(r);
+    } catch {
+      // ignore
+    } finally {
+      setIsLoading(false);
     }
-    fetchData();
-  }, [from, to, isDateChanged]);
+  }
 
   return (
     <>
@@ -66,6 +69,7 @@ export function AnalyticsContent({
           <input
             type="date"
             value={from}
+            max={to}
             onChange={(e) => setFrom(e.target.value)}
             className="px-3 py-1.5 border border-gray-300 rounded-md text-sm"
           />
@@ -73,9 +77,17 @@ export function AnalyticsContent({
           <input
             type="date"
             value={to}
+            min={from}
             onChange={(e) => setTo(e.target.value)}
             className="px-3 py-1.5 border border-gray-300 rounded-md text-sm"
           />
+          <button
+            onClick={handleSearch}
+            disabled={!isDirty || isLoading}
+            className="px-4 py-1.5 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            확인
+          </button>
         </div>
       </div>
 
@@ -129,7 +141,7 @@ export function AnalyticsContent({
             </div>
           </div>
 
-          <VisitorMap from={from} to={to} />
+          <VisitorMap from={appliedFrom} to={appliedTo} />
         </div>
       )}
     </>
