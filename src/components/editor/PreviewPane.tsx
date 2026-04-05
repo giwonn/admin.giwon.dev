@@ -10,6 +10,7 @@ import rehypeRaw from "rehype-raw";
 import { visit } from "unist-util-visit";
 import type { Root, Element } from "hast";
 import { CodeBlock } from "@/components/mdx/CodeBlock";
+import { CustomContainer } from "@/components/mdx/CustomContainer";
 
 // blog.giwon.dev와 동일한 rehype 플러그인
 function rehypeMermaid() {
@@ -42,6 +43,26 @@ function rehypeCodeLanguage() {
       }
     });
   };
+}
+
+// :::tip, :::warning, :::danger, :::info 컨테이너를 HTML로 변환
+function transformContainers(source: string): string {
+  return source.replace(
+    /^:::(tip|warning|danger|info)(?:\s+(.*))?\n([\s\S]*?)^:::\s*$/gm,
+    (_match, type, title, content) => {
+      const escapedTitle = title ? ` title="${title.trim()}"` : "";
+      return `<div data-container="${type}"${escapedTitle}>\n\n${content.trim()}\n\n</div>`;
+    }
+  );
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function ContainerDiv(props: any) {
+  const type = props["data-container"];
+  if (type) {
+    return <CustomContainer type={type} title={props.title}>{props.children}</CustomContainer>;
+  }
+  return <div {...props} />;
 }
 
 // 닫히지 않은 코드 펜스를 이스케이프 처리
@@ -90,9 +111,10 @@ export function PreviewPane({ content }: PreviewPaneProps) {
           ]}
           components={{
             pre: CodeBlock,
+            div: ContainerDiv,
           }}
         >
-          {escapeUnclosedCodeFences(content)}
+          {escapeUnclosedCodeFences(transformContainers(content))}
         </ReactMarkdown>
       </article>
     </div>
