@@ -27,6 +27,7 @@ const markdownKeymap = keymap.of([
   { key: "Mod-i", run: (view) => wrapSelection(view, "*", "*") },
   { key: "Mod-Shift-s", run: (view) => wrapSelection(view, "~~", "~~") },
   { key: "Mod-e", run: (view) => wrapSelection(view, "`", "`") },
+  { key: "Mod-u", run: (view) => wrapSelection(view, "<u>", "</u>") },
 ]);
 
 // ``` 입력 후 Enter → 자동으로 닫는 ``` 삽입
