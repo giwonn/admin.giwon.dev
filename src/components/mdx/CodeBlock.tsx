@@ -58,7 +58,7 @@ export function CodeBlock({ children }: CodeBlockProps) {
 
     return (
         <div className="group relative">
-            <pre ref={preRef}>{children}</pre>
+            <pre ref={preRef} data-language={language || "text"}>{children}</pre>
             <button
                 onClick={handleCopy}
                 className="absolute top-11 right-3 p-1.5 text-gray-400 hover:text-white opacity-0 group-hover:opacity-100 transition-opacity duration-200"

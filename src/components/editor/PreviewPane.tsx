@@ -52,7 +52,9 @@ function rehypeCodeLanguage() {
       if (node.tagName === "code" && (parent as Element)?.tagName === "pre") {
         const classes = (node.properties?.className as string[]) || [];
         const langClass = classes.find((c) => c.startsWith("language-"));
-        node.properties["data-language"] = langClass ? langClass.replace("language-", "") : "text";
+        const lang = langClass ? langClass.replace("language-", "") : "text";
+        node.properties["data-language"] = lang;
+        (parent as Element).properties["data-language"] = lang;
       }
     });
   };

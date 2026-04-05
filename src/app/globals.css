@@ -228,10 +228,13 @@
 /* 프리뷰 코드블록 스타일 (blog.giwon.dev와 동일) */
 .prose pre,
 .prose div > pre {
+  position: relative;
   padding: 0 !important;
+  padding-top: 2rem !important;
   background: #282c34 !important;
   border-radius: 0.5rem;
   margin: 0 !important;
+  overflow: hidden !important;
 }
 
 .prose .group {
@@ -239,10 +242,9 @@
 }
 
 .prose pre code {
-  position: relative;
   display: block;
   padding: 1rem !important;
-  padding-top: 2.5rem !important;
+  overflow-x: auto;
   color: #abb2bf;
 }
 
@@ -250,14 +252,13 @@
   color: inherit;
 }
 
-.prose pre code::before {
+.prose pre::before {
   content: attr(data-language);
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
   padding: 0.4rem 0.75rem;
-  display: block;
   min-height: 2rem;
   box-sizing: border-box;
   font-size: 0.75rem;
@@ -265,9 +266,10 @@
   color: #9ca3af;
   background: rgba(255, 255, 255, 0.05);
   text-align: right;
+  z-index: 1;
 }
 
-.prose pre code::after {
+.prose pre::after {
   content: "";
   position: absolute;
   top: 0.6rem;
@@ -279,6 +281,7 @@
   box-shadow:
     20px 0 0 #ffbd2e,
     40px 0 0 #27c93f;
+  z-index: 2;
 }
 
 /* 프리뷰 인라인 코드 스타일 */
