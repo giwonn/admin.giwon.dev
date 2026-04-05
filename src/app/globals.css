@@ -257,6 +257,9 @@
   left: 0;
   right: 0;
   padding: 0.4rem 0.75rem;
+  display: block;
+  min-height: 2rem;
+  box-sizing: border-box;
   font-size: 0.75rem;
   font-weight: 500;
   color: #9ca3af;
