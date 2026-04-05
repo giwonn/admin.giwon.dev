@@ -1,6 +1,7 @@
 "use client";
 
 import { EditorView } from "@codemirror/view";
+import { CheatSheet } from "./CheatSheet";
 
 interface ToolbarProps {
   editorView: EditorView | null;
@@ -116,6 +117,8 @@ export function Toolbar({ editorView, onImageUpload }: ToolbarProps) {
       >
         이미지
       </button>
+      <div className="flex-1" />
+      <CheatSheet />
     </div>
   );
 }
