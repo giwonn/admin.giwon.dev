@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { createArticle } from "@/actions/articles";
 import { PublishPanel } from "@/components/articles/PublishPanel";
 
@@ -25,6 +25,16 @@ export default function NewArticlePage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showPublishPanel, setShowPublishPanel] = useState(false);
+
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (title || content) {
+        e.preventDefault();
+      }
+    };
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, [title, content]);
 
   const handleSave = async (publishedAt: string | undefined, hidden: boolean, password: string | null) => {
     if (!title.trim()) {

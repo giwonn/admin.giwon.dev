@@ -31,6 +31,17 @@ export default function EditArticlePage() {
   const [isFetching, setIsFetching] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showPublishPanel, setShowPublishPanel] = useState(false);
+  const [isDirty, setIsDirty] = useState(false);
+
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (isDirty) {
+        e.preventDefault();
+      }
+    };
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, [isDirty]);
 
   useEffect(() => {
     async function fetchArticle() {
@@ -99,13 +110,13 @@ export default function EditArticlePage() {
           <input
             type="text"
             value={title}
-            onChange={(e) => setTitle(e.target.value)}
+            onChange={(e) => { setTitle(e.target.value); setIsDirty(true); }}
             placeholder="제목을 입력하세요"
             className="w-full px-4 py-3 text-2xl font-bold border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
 
-        <MarkdownEditor content={content} onChange={setContent} />
+        <MarkdownEditor content={content} onChange={(val) => { setContent(val); setIsDirty(true); }} />
       </form>
 
       <PublishPanel
