@@ -226,15 +226,22 @@
 }
 
 /* 프리뷰 코드블록 스타일 (blog.giwon.dev와 동일) */
-.prose pre {
+.prose pre,
+.prose div > pre {
   padding: 0 !important;
   background: #282c34 !important;
   border-radius: 0.5rem;
+  margin: 0 !important;
+}
+
+.prose .group {
+  margin: 1.25em 0;
 }
 
 .prose pre code {
   position: relative;
   display: block;
+  padding: 1rem !important;
   padding-top: 2.5rem !important;
   color: #abb2bf;
 }
