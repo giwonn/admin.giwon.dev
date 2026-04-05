@@ -4,10 +4,39 @@ import { useCallback, useRef, useState } from "react";
 import CodeMirror, { ReactCodeMirrorRef } from "@uiw/react-codemirror";
 import { markdown, markdownLanguage } from "@codemirror/lang-markdown";
 import { languages } from "@codemirror/language-data";
-import { EditorView } from "@codemirror/view";
+import { EditorView, keymap } from "@codemirror/view";
 import { Toolbar } from "./Toolbar";
 import { PreviewPane } from "./PreviewPane";
 import { uploadImage } from "@/actions/articles";
+
+function wrapSelection(view: EditorView, before: string, after: string) {
+  const { from, to } = view.state.selection.main;
+  const selected = view.state.sliceDoc(from, to);
+  const insert = `${before}${selected || "텍스트"}${after}`;
+  view.dispatch({
+    changes: { from, to, insert },
+    selection: selected
+      ? { anchor: from + insert.length }
+      : { anchor: from + before.length, head: from + before.length + "텍스트".length },
+  });
+  return true;
+}
+
+const markdownKeymap = keymap.of([
+  { key: "Mod-b", run: (view) => wrapSelection(view, "**", "**") },
+  { key: "Mod-i", run: (view) => wrapSelection(view, "*", "*") },
+  { key: "Mod-Shift-s", run: (view) => wrapSelection(view, "~~", "~~") },
+  { key: "Mod-e", run: (view) => wrapSelection(view, "`", "`") },
+]);
+
+// 한국어 키보드 맥에서 ₩ → ` 변환
+const wonToBacktick = EditorView.inputHandler.of((view, from, to, text) => {
+  if (text === "₩") {
+    view.dispatch({ changes: { from, to, insert: "`" } });
+    return true;
+  }
+  return false;
+});
 
 interface MarkdownEditorProps {
   content?: string;
@@ -136,12 +165,15 @@ export function MarkdownEditor({ content = "", onChange }: MarkdownEditorProps) 
             extensions={[
               markdown({ base: markdownLanguage, codeLanguages: languages }),
               EditorView.lineWrapping,
+              markdownKeymap,
+              wonToBacktick,
               eventHandlers,
             ]}
             basicSetup={{
               lineNumbers: false,
               foldGutter: false,
               highlightActiveLine: true,
+              closeBrackets: false,
             }}
             placeholder="마크다운을 입력하세요..."
             className="min-h-[500px]"
