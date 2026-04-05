@@ -217,7 +217,7 @@ export function MarkdownEditor({ content = "", onChange }: MarkdownEditorProps) 
   });
 
   return (
-    <div className="border border-gray-300 rounded-lg overflow-hidden bg-white flex flex-col h-[calc(100vh-200px)] min-h-[500px]">
+    <div className="border border-gray-300 rounded-lg overflow-hidden bg-white flex flex-col flex-1 min-h-0">
       <Toolbar editorView={getEditorView()} onImageUpload={handleImageUploadClick} />
 
       <div className="flex flex-1 overflow-hidden">

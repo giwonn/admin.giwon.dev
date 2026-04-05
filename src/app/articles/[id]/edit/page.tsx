@@ -87,8 +87,8 @@ export default function EditArticlePage() {
   }
 
   return (
-    <div className="p-8">
-      <div className="flex justify-between items-center mb-8">
+    <div className="p-8 h-[calc(100vh-theme(spacing.16))] flex flex-col overflow-hidden">
+      <div className="flex justify-between items-center mb-4">
         <h1 className="text-2xl font-bold">글 수정</h1>
         <button
           onClick={() => setShowPublishPanel(true)}
@@ -105,7 +105,7 @@ export default function EditArticlePage() {
         </div>
       )}
 
-      <form onSubmit={(e) => e.preventDefault()} className="space-y-6">
+      <form onSubmit={(e) => e.preventDefault()} className="flex flex-col gap-4 flex-1 min-h-0">
         <div>
           <input
             type="text"
