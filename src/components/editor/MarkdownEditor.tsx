@@ -174,34 +174,47 @@ export function MarkdownEditor({ content = "", onChange }: MarkdownEditorProps) 
   useEffect(() => {
     const editorScroller = editorScrollRef.current;
     const preview = previewRef.current;
-    const view = editorRef.current?.view;
-    if (!editorScroller || !preview || !view) return;
+    if (!editorScroller || !preview) return;
 
     const handleEditorScroll = () => {
       if (syncingRef.current) return;
       syncingRef.current = true;
 
-      // 에디터 뷰포트 상단의 라인 번호 계산
-      const scrollRatio = editorScroller.scrollTop / (editorScroller.scrollHeight - editorScroller.clientHeight || 1);
-      const totalLines = view.state.doc.lines;
-      const topLine = Math.max(1, Math.round(scrollRatio * totalLines));
+      const view = editorRef.current?.view;
+      if (!view) { syncingRef.current = false; return; }
 
-      // 프리뷰에서 해당 라인에 가장 가까운 요소 찾기
-      const lineElements = preview.querySelectorAll<HTMLElement>("[data-line]");
-      let target: HTMLElement | null = null;
+      // 에디터 뷰포트 상단에 실제로 보이는 라인 번호를 CM에서 직접 가져옴
+      const editorRect = editorScroller.getBoundingClientRect();
+      const topPos = view.posAtCoords({ x: editorRect.left, y: editorRect.top });
+      const topLine = topPos !== null ? view.state.doc.lineAt(topPos).number : 1;
+
+      // 프리뷰에서 해당 라인에 가장 가까운 요소와 다음 요소 찾기
+      const lineElements = Array.from(preview.querySelectorAll<HTMLElement>("[data-line]"));
+      let prevEl: HTMLElement | null = null;
+      let nextEl: HTMLElement | null = null;
       for (const el of lineElements) {
         const line = Number(el.dataset.line);
         if (line <= topLine) {
-          target = el;
+          prevEl = el;
         } else {
+          nextEl = el;
           break;
         }
       }
 
-      if (target) {
-        const previewRect = preview.getBoundingClientRect();
-        const targetRect = target.getBoundingClientRect();
-        preview.scrollTop += targetRect.top - previewRect.top;
+      if (prevEl) {
+        // prevEl과 nextEl 사이를 보간
+        const prevLine = Number(prevEl.dataset.line);
+        const prevTop = prevEl.offsetTop;
+
+        if (nextEl) {
+          const nextLine = Number(nextEl.dataset.line);
+          const nextTop = nextEl.offsetTop;
+          const lineRatio = (topLine - prevLine) / (nextLine - prevLine || 1);
+          preview.scrollTop = prevTop + lineRatio * (nextTop - prevTop);
+        } else {
+          preview.scrollTop = prevTop;
+        }
       }
 
       requestAnimationFrame(() => { syncingRef.current = false; });
