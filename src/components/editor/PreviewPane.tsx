@@ -33,14 +33,11 @@ function rehypeMermaid() {
 
 function rehypeCodeLanguage() {
   return (tree: Root) => {
-    visit(tree, "element", (node: Element) => {
-      if (node.tagName === "code" && node.properties?.className) {
-        const classes = node.properties.className as string[];
+    visit(tree, "element", (node: Element, _index, parent) => {
+      if (node.tagName === "code" && (parent as Element)?.tagName === "pre") {
+        const classes = (node.properties?.className as string[]) || [];
         const langClass = classes.find((c) => c.startsWith("language-"));
-        if (langClass) {
-          const lang = langClass.replace("language-", "");
-          node.properties["data-language"] = lang;
-        }
+        node.properties["data-language"] = langClass ? langClass.replace("language-", "") : "text";
       }
     });
   };
