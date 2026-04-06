@@ -4,6 +4,8 @@ import { DeleteArticleButton } from "@/components/articles/DeleteArticleButton";
 import { StatusBadge } from "@/components/articles/StatusBadge";
 import { notFound } from "next/navigation";
 
+export const dynamic = "force-dynamic";
+
 type Params = Promise<{ id: string }>;
 
 export default async function ArticleDetailPage({ params }: { params: Params }) {

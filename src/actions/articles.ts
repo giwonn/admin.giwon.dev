@@ -1,5 +1,6 @@
 'use server';
 
+import { revalidatePath } from 'next/cache';
 import { apiClient } from '@/lib/api';
 import type { Article, PageResponse } from '@/types';
 
@@ -24,10 +25,12 @@ export async function createArticle(
   hidden?: boolean,
   password?: string | null
 ): Promise<Article> {
-  return apiClient<Article>('/admin/articles', {
+  const article = await apiClient<Article>('/admin/articles', {
     method: 'POST',
     body: JSON.stringify({ title, content, publishedAt, hidden, password }),
   });
+  revalidatePath('/articles', 'layout');
+  return article;
 }
 
 export async function updateArticle(
@@ -38,16 +41,19 @@ export async function updateArticle(
   hidden?: boolean,
   password?: string | null
 ): Promise<Article> {
-  return apiClient<Article>(`/admin/articles/${id}`, {
+  const article = await apiClient<Article>(`/admin/articles/${id}`, {
     method: 'PUT',
     body: JSON.stringify({ title, content, publishedAt, hidden, password }),
   });
+  revalidatePath('/articles', 'layout');
+  return article;
 }
 
 export async function deleteArticle(id: number): Promise<void> {
-  return apiClient<void>(`/admin/articles/${id}`, {
+  await apiClient<void>(`/admin/articles/${id}`, {
     method: 'DELETE',
   });
+  revalidatePath('/articles', 'layout');
 }
 
 export async function uploadImage(formData: FormData): Promise<{ url: string }> {
