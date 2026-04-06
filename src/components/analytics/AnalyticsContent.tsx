@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   getOverview,
   getDailyPageViews,
@@ -157,8 +157,7 @@ function getPeriodRange(period: PopularPeriod): { from: string; to: string } {
 function PopularPages() {
   const [period, setPeriod] = useState<PopularPeriod>("weekly");
   const [pages, setPages] = useState<PageViewCount[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [initialized, setInitialized] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   async function fetchPages(p: PopularPeriod) {
     setIsLoading(true);
@@ -170,13 +169,12 @@ function PopularPages() {
       // ignore
     } finally {
       setIsLoading(false);
-      setInitialized(true);
     }
   }
 
-  if (!initialized) {
+  useEffect(() => {
     fetchPages(period);
-  }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   function handlePeriodChange(p: PopularPeriod) {
     setPeriod(p);
