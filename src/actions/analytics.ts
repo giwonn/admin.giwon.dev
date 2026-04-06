@@ -13,7 +13,8 @@ export interface DailyPageViewCount {
 }
 
 export interface PageViewCount {
-  path: string;
+  articleId: number;
+  title: string;
   viewCount: number;
 }
 

@@ -111,15 +111,15 @@ export function AnalyticsContent({
                 <thead>
                   <tr className="text-sm text-gray-500 border-b">
                     <th className="text-left py-2">#</th>
-                    <th className="text-left py-2">경로</th>
+                    <th className="text-left py-2">제목</th>
                     <th className="text-right py-2">조회수</th>
                   </tr>
                 </thead>
                 <tbody>
                   {topPages.slice(0, 10).map((page, i) => (
-                    <tr key={page.path} className="border-b last:border-0">
+                    <tr key={page.articleId} className="border-b last:border-0">
                       <td className="py-2 text-sm text-gray-400 w-8">{i + 1}</td>
-                      <td className="py-2 text-sm truncate max-w-[300px]">{page.path}</td>
+                      <td className="py-2 text-sm truncate max-w-[300px]">{page.title}</td>
                       <td className="py-2 text-sm text-right font-medium">{page.viewCount.toLocaleString()}</td>
                     </tr>
                   ))}
