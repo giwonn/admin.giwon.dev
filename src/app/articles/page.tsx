@@ -80,14 +80,14 @@ export default async function ArticlesPage({ searchParams }: { searchParams: Sea
             </tbody>
           </table>
 
-          {articles.totalPages > 1 && (
+          {articles.page.totalPages > 1 && (
             <div className="px-6 py-4 border-t flex justify-center gap-2">
-              {Array.from({ length: articles.totalPages }, (_, i) => (
+              {Array.from({ length: articles.page.totalPages }, (_, i) => (
                 <Link
                   key={i}
                   href={`/articles?page=${i}`}
                   className={`px-3 py-1 rounded text-sm ${
-                    i === articles.number
+                    i === articles.page.number
                       ? "bg-blue-600 text-white"
                       : "bg-gray-200 text-gray-700 hover:bg-gray-300"
                   }`}
