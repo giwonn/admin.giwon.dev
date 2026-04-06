@@ -17,7 +17,6 @@ import { DateRangePicker } from "@/components/ui/date-range-picker";
 interface AnalyticsContentProps {
   initialOverview: AnalyticsOverview | null;
   initialDailyViews: DailyPageViewCount[];
-  initialTopPages: PageViewCount[];
   initialReferrers: ReferrerCount[];
   initialFrom: string;
   initialTo: string;
@@ -26,7 +25,6 @@ interface AnalyticsContentProps {
 export function AnalyticsContent({
   initialOverview,
   initialDailyViews,
-  initialTopPages,
   initialReferrers,
   initialFrom,
   initialTo,
@@ -35,7 +33,6 @@ export function AnalyticsContent({
   const [appliedTo, setAppliedTo] = useState(initialTo);
   const [overview, setOverview] = useState(initialOverview);
   const [dailyViews, setDailyViews] = useState(initialDailyViews);
-  const [topPages, setTopPages] = useState(initialTopPages);
   const [referrers, setReferrers] = useState(initialReferrers);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -50,15 +47,13 @@ export function AnalyticsContent({
     setAppliedTo(toStr);
     setIsLoading(true);
     try {
-      const [o, d, p, r] = await Promise.all([
+      const [o, d, r] = await Promise.all([
         getOverview(fromStr, toStr),
         getDailyPageViews(fromStr, toStr),
-        getTopPages(fromStr, toStr),
         getTopReferrers(fromStr, toStr),
       ]);
       setOverview(o);
       setDailyViews(d);
-      setTopPages(p);
       setReferrers(r);
     } catch {
       // ignore
@@ -102,31 +97,7 @@ export function AnalyticsContent({
             <DailyLineChart data={dailyViews} />
           </div>
 
-          <div id="popular" className="bg-white rounded-lg shadow p-6">
-            <h2 className="text-lg font-semibold mb-4">인기 페이지</h2>
-            {topPages.length === 0 ? (
-              <div className="text-gray-500 text-center py-8">데이터가 없습니다</div>
-            ) : (
-              <table className="w-full">
-                <thead>
-                  <tr className="text-sm text-gray-500 border-b">
-                    <th className="text-left py-2">#</th>
-                    <th className="text-left py-2">제목</th>
-                    <th className="text-right py-2">조회수</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {topPages.slice(0, 10).map((page, i) => (
-                    <tr key={page.articleId} className="border-b last:border-0">
-                      <td className="py-2 text-sm text-gray-400 w-8">{i + 1}</td>
-                      <td className="py-2 text-sm truncate max-w-[300px]">{page.title}</td>
-                      <td className="py-2 text-sm text-right font-medium">{page.viewCount.toLocaleString()}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            )}
-          </div>
+          <PopularPages />
 
           <div id="referrers">
             <div className="bg-white rounded-lg shadow p-6">
@@ -158,6 +129,105 @@ export function AnalyticsContent({
         </div>
       )}
     </>
+  );
+}
+
+type PopularPeriod = "daily" | "weekly" | "monthly" | "yearly";
+
+const PERIOD_LABELS: Record<PopularPeriod, string> = {
+  daily: "일간",
+  weekly: "주간",
+  monthly: "월간",
+  yearly: "연간",
+};
+
+function getPeriodRange(period: PopularPeriod): { from: string; to: string } {
+  const to = new Date();
+  const from = new Date();
+  switch (period) {
+    case "daily": from.setDate(from.getDate() - 1); break;
+    case "weekly": from.setDate(from.getDate() - 7); break;
+    case "monthly": from.setMonth(from.getMonth() - 1); break;
+    case "yearly": from.setFullYear(from.getFullYear() - 1); break;
+  }
+  const fmt = (d: Date) => d.toISOString().split("T")[0];
+  return { from: fmt(from), to: fmt(to) };
+}
+
+function PopularPages() {
+  const [period, setPeriod] = useState<PopularPeriod>("weekly");
+  const [pages, setPages] = useState<PageViewCount[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [initialized, setInitialized] = useState(false);
+
+  async function fetchPages(p: PopularPeriod) {
+    setIsLoading(true);
+    try {
+      const { from, to } = getPeriodRange(p);
+      const data = await getTopPages(from, to);
+      setPages(data);
+    } catch {
+      // ignore
+    } finally {
+      setIsLoading(false);
+      setInitialized(true);
+    }
+  }
+
+  if (!initialized) {
+    fetchPages(period);
+  }
+
+  function handlePeriodChange(p: PopularPeriod) {
+    setPeriod(p);
+    fetchPages(p);
+  }
+
+  return (
+    <div id="popular" className="bg-white rounded-lg shadow p-6">
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-lg font-semibold">인기 페이지</h2>
+        <div className="flex gap-1">
+          {(Object.keys(PERIOD_LABELS) as PopularPeriod[]).map((p) => (
+            <button
+              key={p}
+              onClick={() => handlePeriodChange(p)}
+              className={`px-3 py-1 text-sm rounded ${
+                period === p
+                  ? "bg-blue-600 text-white"
+                  : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+              }`}
+            >
+              {PERIOD_LABELS[p]}
+            </button>
+          ))}
+        </div>
+      </div>
+      {isLoading ? (
+        <div className="text-gray-400 text-center py-8">불러오는 중...</div>
+      ) : pages.length === 0 ? (
+        <div className="text-gray-500 text-center py-8">데이터가 없습니다</div>
+      ) : (
+        <table className="w-full">
+          <thead>
+            <tr className="text-sm text-gray-500 border-b">
+              <th className="text-left py-2">#</th>
+              <th className="text-left py-2">제목</th>
+              <th className="text-right py-2">조회수</th>
+            </tr>
+          </thead>
+          <tbody>
+            {pages.slice(0, 10).map((page, i) => (
+              <tr key={page.articleId} className="border-b last:border-0">
+                <td className="py-2 text-sm text-gray-400 w-8">{i + 1}</td>
+                <td className="py-2 text-sm truncate max-w-[300px]">{page.title}</td>
+                <td className="py-2 text-sm text-right font-medium">{page.viewCount.toLocaleString()}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
+    </div>
   );
 }
 
