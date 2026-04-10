@@ -66,6 +66,7 @@ export interface VisitorLocation {
   country: string | null;
   city: string | null;
   visitCount: number;
+  lastVisitedAt: string;
 }
 
 export async function getVisitorLocations(from: string, to: string): Promise<VisitorLocation[]> {

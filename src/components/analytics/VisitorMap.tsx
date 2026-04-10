@@ -3,13 +3,54 @@
 import { useEffect, useState } from "react";
 import { getVisitorLocations, getIpAccessHistory, type VisitorLocation, type IpAccessHistory } from "@/actions/analytics";
 import { formatDateTime } from "@/lib/format-date-time";
+import { sortBy, type SortDirection } from "@/lib/sort-utils";
 import "leaflet/dist/leaflet.css";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, ChevronUp, ChevronDown, ChevronsUpDown } from "lucide-react";
 
 interface VisitorMapProps {
   from: string;
   to: string;
 }
+
+function SortIcon({ active, direction }: { active: boolean; direction: SortDirection }) {
+  if (!active) return <ChevronsUpDown className="w-3.5 h-3.5 text-gray-300" />;
+  return direction === "asc"
+    ? <ChevronUp className="w-3.5 h-3.5 text-blue-600" />
+    : <ChevronDown className="w-3.5 h-3.5 text-blue-600" />;
+}
+
+function SortableHeader<K extends string>({
+  label,
+  sortKey,
+  currentKey,
+  direction,
+  onSort,
+  align = "left",
+}: {
+  label: string;
+  sortKey: K;
+  currentKey: K | null;
+  direction: SortDirection;
+  onSort: (key: K) => void;
+  align?: "left" | "right";
+}) {
+  return (
+    <th
+      className={`py-2 text-sm text-gray-500 cursor-pointer select-none hover:text-gray-700 transition-colors ${
+        align === "right" ? "text-right" : "text-left"
+      }`}
+      onClick={() => onSort(sortKey)}
+    >
+      <span className={`inline-flex items-center gap-1 ${align === "right" ? "flex-row-reverse" : ""}`}>
+        {label}
+        <SortIcon active={currentKey === sortKey} direction={direction} />
+      </span>
+    </th>
+  );
+}
+
+type LocationSortKey = "ipAddress" | "location" | "visitCount" | "lastVisitedAt";
+type DetailSortKey = "path" | "location" | "createdAt";
 
 export function VisitorMap({ from, to }: VisitorMapProps) {
   const [locations, setLocations] = useState<VisitorLocation[]>([]);
@@ -21,6 +62,14 @@ export function VisitorMap({ from, to }: VisitorMapProps) {
   const [selectedIp, setSelectedIp] = useState<string | null>(null);
   const [accessHistory, setAccessHistory] = useState<IpAccessHistory[]>([]);
   const [isDetailLoading, setIsDetailLoading] = useState(false);
+
+  // 목록 정렬
+  const [listSortKey, setListSortKey] = useState<LocationSortKey | null>(null);
+  const [listSortDir, setListSortDir] = useState<SortDirection>("asc");
+
+  // 상세 정렬
+  const [detailSortKey, setDetailSortKey] = useState<DetailSortKey | null>(null);
+  const [detailSortDir, setDetailSortDir] = useState<SortDirection>("asc");
 
   useEffect(() => {
     import("./VisitorMapLeaflet").then((mod) => {
@@ -46,6 +95,7 @@ export function VisitorMap({ from, to }: VisitorMapProps) {
   async function handleIpClick(ip: string) {
     setSelectedIp(ip);
     setIsDetailLoading(true);
+    setDetailSortKey(null);
     try {
       const data = await getIpAccessHistory(ip, from, to);
       setAccessHistory(data);
@@ -61,7 +111,52 @@ export function VisitorMap({ from, to }: VisitorMapProps) {
     setAccessHistory([]);
   }
 
+  function handleListSort(key: LocationSortKey) {
+    if (listSortKey === key) {
+      setListSortDir((d) => (d === "asc" ? "desc" : "asc"));
+    } else {
+      setListSortKey(key);
+      setListSortDir("asc");
+    }
+  }
+
+  function handleDetailSort(key: DetailSortKey) {
+    if (detailSortKey === key) {
+      setDetailSortDir((d) => (d === "asc" ? "desc" : "asc"));
+    } else {
+      setDetailSortKey(key);
+      setDetailSortDir("asc");
+    }
+  }
+
+  // location 키를 위한 가상 필드 포함 정렬
+  function getSortedLocations(): VisitorLocation[] {
+    if (!listSortKey) return locations;
+    if (listSortKey === "location") {
+      const withLocation = locations.map((l) => ({
+        ...l,
+        _location: [l.city, l.country].filter(Boolean).join(", ") || "",
+      }));
+      return sortBy(withLocation, "_location", listSortDir).map(({ _location, ...rest }) => rest);
+    }
+    return sortBy(locations, listSortKey, listSortDir);
+  }
+
+  function getSortedHistory(): IpAccessHistory[] {
+    if (!detailSortKey) return accessHistory;
+    if (detailSortKey === "location") {
+      const withLocation = accessHistory.map((h) => ({
+        ...h,
+        _location: [h.city, h.country].filter(Boolean).join(", ") || "",
+      }));
+      return sortBy(withLocation, "_location", detailSortDir).map(({ _location, ...rest }) => rest);
+    }
+    return sortBy(accessHistory, detailSortKey, detailSortDir);
+  }
+
   const selectedLocation = selectedIp ? locations.find((l) => l.ipAddress === selectedIp) : null;
+  const sortedLocations = getSortedLocations();
+  const sortedHistory = getSortedHistory();
 
   return (
     <div id="map" className="bg-white rounded-lg shadow p-6">
@@ -113,14 +208,14 @@ export function VisitorMap({ from, to }: VisitorMapProps) {
             <>
               <table className="w-full">
                 <thead>
-                  <tr className="text-sm text-gray-500 border-b">
-                    <th className="text-left py-2">페이지</th>
-                    <th className="text-left py-2">위치</th>
-                    <th className="text-right py-2">접속 시간</th>
+                  <tr className="border-b">
+                    <SortableHeader label="페이지" sortKey="path" currentKey={detailSortKey} direction={detailSortDir} onSort={handleDetailSort} />
+                    <SortableHeader label="위치" sortKey="location" currentKey={detailSortKey} direction={detailSortDir} onSort={handleDetailSort} />
+                    <SortableHeader label="접속 시간" sortKey="createdAt" currentKey={detailSortKey} direction={detailSortDir} onSort={handleDetailSort} align="right" />
                   </tr>
                 </thead>
                 <tbody>
-                  {accessHistory.map((item, i) => (
+                  {sortedHistory.map((item, i) => (
                     <tr key={i} className="border-b last:border-0">
                       <td className="py-2 text-sm truncate max-w-[200px]" title={item.path}>
                         {item.path}
@@ -145,14 +240,15 @@ export function VisitorMap({ from, to }: VisitorMapProps) {
         /* IP 목록 */
         <table className="w-full">
           <thead>
-            <tr className="text-sm text-gray-500 border-b">
-              <th className="text-left py-2">IP</th>
-              <th className="text-left py-2">위치</th>
-              <th className="text-right py-2">방문수</th>
+            <tr className="border-b">
+              <SortableHeader label="IP" sortKey="ipAddress" currentKey={listSortKey} direction={listSortDir} onSort={handleListSort} />
+              <SortableHeader label="위치" sortKey="location" currentKey={listSortKey} direction={listSortDir} onSort={handleListSort} />
+              <SortableHeader label="방문수" sortKey="visitCount" currentKey={listSortKey} direction={listSortDir} onSort={handleListSort} align="right" />
+              <SortableHeader label="최근 방문" sortKey="lastVisitedAt" currentKey={listSortKey} direction={listSortDir} onSort={handleListSort} align="right" />
             </tr>
           </thead>
           <tbody>
-            {locations.map((loc) => (
+            {sortedLocations.map((loc) => (
               <tr
                 key={loc.ipAddress}
                 className="border-b last:border-0 cursor-pointer transition-colors hover:bg-blue-50"
@@ -163,6 +259,9 @@ export function VisitorMap({ from, to }: VisitorMapProps) {
                   {[loc.city, loc.country].filter(Boolean).join(", ") || "-"}
                 </td>
                 <td className="py-2 text-sm text-right font-medium">{loc.visitCount}</td>
+                <td className="py-2 text-sm text-right text-gray-600 whitespace-nowrap">
+                  {formatDateTime(loc.lastVisitedAt)}
+                </td>
               </tr>
             ))}
           </tbody>
