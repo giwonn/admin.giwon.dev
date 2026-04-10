@@ -71,3 +71,15 @@ export interface VisitorLocation {
 export async function getVisitorLocations(from: string, to: string): Promise<VisitorLocation[]> {
   return apiClient<VisitorLocation[]>(`/admin/analytics/visitor-locations?from=${from}&to=${to}`);
 }
+
+export interface IpAccessHistory {
+  path: string;
+  ipAddress: string;
+  country: string | null;
+  city: string | null;
+  createdAt: string;
+}
+
+export async function getIpAccessHistory(ip: string, from: string, to: string): Promise<IpAccessHistory[]> {
+  return apiClient<IpAccessHistory[]>(`/admin/analytics/ip-access-history?ip=${encodeURIComponent(ip)}&from=${from}&to=${to}`);
+}
