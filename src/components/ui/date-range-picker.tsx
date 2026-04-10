@@ -8,6 +8,7 @@ import { CalendarIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { type PresetKey, getPresetRange, detectPreset } from "@/lib/date-range-presets";
 
 interface DateRangePickerProps {
   from: Date;
@@ -15,9 +16,24 @@ interface DateRangePickerProps {
   onChange: (range: { from: Date; to: Date }) => void;
 }
 
+const PRESETS: { key: PresetKey; label: string }[] = [
+  { key: "today", label: "오늘" },
+  { key: "yesterday", label: "전날" },
+  { key: "week", label: "일주일" },
+  { key: "month", label: "한달" },
+  { key: "custom", label: "커스텀" },
+];
+
 export function DateRangePicker({ from, to, onChange }: DateRangePickerProps) {
   const [openFrom, setOpenFrom] = React.useState(false);
   const [openTo, setOpenTo] = React.useState(false);
+  const activePreset = detectPreset(from, to);
+
+  function handlePresetClick(key: PresetKey) {
+    if (key === "custom") return;
+    const range = getPresetRange(key);
+    onChange(range);
+  }
 
   function handleFromSelect(selected: Date | undefined) {
     if (!selected) return;
@@ -34,7 +50,28 @@ export function DateRangePicker({ from, to, onChange }: DateRangePickerProps) {
   }
 
   return (
-    <div className="flex items-center gap-1">
+    <div className="flex items-center gap-2">
+      {/* 프리셋 버튼 */}
+      <div className="flex gap-1">
+        {PRESETS.map(({ key, label }) => (
+          <button
+            key={key}
+            onClick={() => handlePresetClick(key)}
+            className={cn(
+              "px-3 py-2 text-sm rounded-md transition-colors",
+              activePreset === key
+                ? "bg-blue-600 text-white"
+                : key === "custom"
+                  ? "bg-gray-100 text-gray-400 cursor-default"
+                  : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+            )}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
+
+      {/* 캘린더 (커스텀 날짜 선택) */}
       <Popover open={openFrom} onOpenChange={setOpenFrom}>
         <PopoverTrigger
           className={cn(

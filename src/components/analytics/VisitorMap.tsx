@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { getVisitorLocations, getIpAccessHistory, type VisitorLocation, type IpAccessHistory } from "@/actions/analytics";
+import { formatDateTime } from "@/lib/format-date-time";
 import "leaflet/dist/leaflet.css";
 import { X } from "lucide-react";
 
@@ -115,7 +116,7 @@ export function VisitorMap({ from, to }: VisitorMapProps) {
 
       {/* 접속 이력 모달 */}
       {modalIp && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40" onClick={closeModal}>
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/40" onClick={closeModal}>
           <div
             className="bg-white rounded-lg shadow-xl w-full max-w-lg max-h-[80vh] flex flex-col"
             onClick={(e) => e.stopPropagation()}
@@ -180,14 +181,4 @@ export function VisitorMap({ from, to }: VisitorMapProps) {
       )}
     </div>
   );
-}
-
-function formatDateTime(dateStr: string): string {
-  const date = new Date(dateStr);
-  const y = date.getFullYear();
-  const m = String(date.getMonth() + 1).padStart(2, "0");
-  const d = String(date.getDate()).padStart(2, "0");
-  const h = String(date.getHours()).padStart(2, "0");
-  const min = String(date.getMinutes()).padStart(2, "0");
-  return `${y}.${m}.${d} ${h}:${min}`;
 }

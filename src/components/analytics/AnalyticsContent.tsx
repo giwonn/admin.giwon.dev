@@ -6,13 +6,17 @@ import {
   getDailyPageViews,
   getTopPages,
   getTopReferrers,
+  getArticleAccessHistory,
   type AnalyticsOverview,
   type DailyPageViewCount,
   type PageViewCount,
   type ReferrerCount,
+  type ArticleAccessHistory,
 } from "@/actions/analytics";
 import { VisitorMap } from "./VisitorMap";
 import { DateRangePicker } from "@/components/ui/date-range-picker";
+import { formatDateTime } from "@/lib/format-date-time";
+import { X } from "lucide-react";
 
 interface AnalyticsContentProps {
   initialOverview: AnalyticsOverview | null;
@@ -158,6 +162,9 @@ function PopularPages() {
   const [period, setPeriod] = useState<PopularPeriod>("weekly");
   const [pages, setPages] = useState<PageViewCount[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [modalPage, setModalPage] = useState<PageViewCount | null>(null);
+  const [accessHistory, setAccessHistory] = useState<ArticleAccessHistory[]>([]);
+  const [isModalLoading, setIsModalLoading] = useState(false);
 
   async function fetchPages(p: PopularPeriod) {
     setIsLoading(true);
@@ -179,6 +186,25 @@ function PopularPages() {
   function handlePeriodChange(p: PopularPeriod) {
     setPeriod(p);
     fetchPages(p);
+  }
+
+  async function handlePageClick(page: PageViewCount) {
+    setModalPage(page);
+    setIsModalLoading(true);
+    try {
+      const { from, to } = getPeriodRange(period);
+      const data = await getArticleAccessHistory(page.articleId, from, to);
+      setAccessHistory(data);
+    } catch {
+      setAccessHistory([]);
+    } finally {
+      setIsModalLoading(false);
+    }
+  }
+
+  function closeModal() {
+    setModalPage(null);
+    setAccessHistory([]);
   }
 
   return (
@@ -216,14 +242,78 @@ function PopularPages() {
           </thead>
           <tbody>
             {pages.slice(0, 10).map((page, i) => (
-              <tr key={page.articleId} className="border-b last:border-0">
+              <tr
+                key={page.articleId}
+                className="border-b last:border-0 cursor-pointer transition-colors hover:bg-blue-50"
+                onClick={() => handlePageClick(page)}
+              >
                 <td className="py-2 text-sm text-gray-400 w-8">{i + 1}</td>
-                <td className="py-2 text-sm truncate max-w-[300px]">{page.title}</td>
+                <td className="py-2 text-sm truncate max-w-[300px] text-blue-600">{page.title}</td>
                 <td className="py-2 text-sm text-right font-medium">{page.viewCount.toLocaleString()}</td>
               </tr>
             ))}
           </tbody>
         </table>
+      )}
+
+      {/* 접속 이력 모달 */}
+      {modalPage && (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/40" onClick={closeModal}>
+          <div
+            className="bg-white rounded-lg shadow-xl w-full max-w-lg max-h-[80vh] flex flex-col"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* 헤더 */}
+            <div className="flex items-center justify-between p-4 border-b">
+              <div className="min-w-0 flex-1 mr-2">
+                <h3 className="text-lg font-semibold truncate">{modalPage.title}</h3>
+                <p className="text-sm text-gray-500">총 {modalPage.viewCount.toLocaleString()}회 조회</p>
+              </div>
+              <button onClick={closeModal} className="p-1 hover:bg-gray-100 rounded flex-shrink-0">
+                <X className="w-5 h-5 text-gray-500" />
+              </button>
+            </div>
+
+            {/* 본문 */}
+            <div className="overflow-y-auto p-4">
+              {isModalLoading ? (
+                <div className="text-gray-400 text-center py-8">불러오는 중...</div>
+              ) : accessHistory.length === 0 ? (
+                <div className="text-gray-400 text-center py-8">접속 이력이 없습니다</div>
+              ) : (
+                <table className="w-full">
+                  <thead>
+                    <tr className="text-sm text-gray-500 border-b">
+                      <th className="text-left py-2">IP</th>
+                      <th className="text-left py-2">지역</th>
+                      <th className="text-right py-2">접속 시간</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {accessHistory.map((item, i) => (
+                      <tr key={i} className="border-b last:border-0">
+                        <td className="py-2 text-sm font-mono text-gray-700">{item.ipAddress}</td>
+                        <td className="py-2 text-sm text-gray-600">
+                          {[item.city, item.country].filter(Boolean).join(", ") || "-"}
+                        </td>
+                        <td className="py-2 text-sm text-right text-gray-600 whitespace-nowrap">
+                          {formatDateTime(item.createdAt)}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </div>
+
+            {/* 푸터 */}
+            {!isModalLoading && accessHistory.length > 0 && (
+              <div className="border-t px-4 py-3 text-sm text-gray-500 text-right">
+                총 {accessHistory.length}건
+              </div>
+            )}
+          </div>
+        </div>
       )}
     </div>
   );
