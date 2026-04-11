@@ -59,11 +59,13 @@ export default async function ArticleDetailPage({ params }: { params: Params }) 
                 <dd className="font-medium">{new Date(article.updatedAt).toLocaleDateString("ko-KR")}</dd>
               </div>
               <div>
-                <dt className="text-sm text-gray-500">
-                  {article.scheduled ? "예약 발행일" : "발행일"}
-                </dt>
+                <dt className="text-sm text-gray-500">슬러그</dt>
+                <dd className="font-medium">{article.slug}</dd>
+              </div>
+              <div>
+                <dt className="text-sm text-gray-500">발행일</dt>
                 <dd className="font-medium">
-                  {new Date(article.publishedAt).toLocaleString("ko-KR")}
+                  {article.publishedAt ? new Date(article.publishedAt).toLocaleString("ko-KR") : "-"}
                 </dd>
               </div>
               <div>
@@ -71,12 +73,8 @@ export default async function ArticleDetailPage({ params }: { params: Params }) 
                 <dd className="font-medium">{article.content.length.toLocaleString()}자</dd>
               </div>
               <div>
-                <dt className="text-sm text-gray-500">숨김</dt>
-                <dd className="font-medium">{article.hidden ? "예" : "아니오"}</dd>
-              </div>
-              <div>
                 <dt className="text-sm text-gray-500">비밀번호</dt>
-                <dd className="font-medium">{article.passwordProtected ? "설정됨" : "없음"}</dd>
+                <dd className="font-medium">{article.password ? "설정됨" : "없음"}</dd>
               </div>
             </dl>
           </div>

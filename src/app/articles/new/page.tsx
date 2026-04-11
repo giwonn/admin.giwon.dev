@@ -36,7 +36,13 @@ export default function NewArticlePage() {
     return () => window.removeEventListener("beforeunload", handleBeforeUnload);
   }, [title, content]);
 
-  const handleSave = async (publishedAt: string | undefined, hidden: boolean, password: string | null) => {
+  const handleSave = async (
+    slug: string,
+    status: string,
+    password: string | null,
+    seriesId: number | null,
+    bookId: number | null
+  ) => {
     if (!title.trim()) {
       setError("제목을 입력하세요.");
       return;
@@ -46,7 +52,15 @@ export default function NewArticlePage() {
     setError(null);
 
     try {
-      await createArticle(title, content, publishedAt, hidden, password);
+      await createArticle({
+        title,
+        slug,
+        content,
+        status,
+        password,
+        seriesId,
+        bookId,
+      });
       router.push("/articles");
     } catch (err) {
       setError(err instanceof Error ? err.message : "저장에 실패했습니다.");
@@ -93,6 +107,7 @@ export default function NewArticlePage() {
         isOpen={showPublishPanel}
         onClose={() => setShowPublishPanel(false)}
         onSave={handleSave}
+        titleForSlug={title}
       />
     </div>
   );

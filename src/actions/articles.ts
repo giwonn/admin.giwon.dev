@@ -18,16 +18,18 @@ export async function getArticle(id: number): Promise<Article> {
   return apiClient<Article>(`/admin/articles/${id}`);
 }
 
-export async function createArticle(
-  title: string,
-  content: string,
-  publishedAt?: string,
-  hidden?: boolean,
-  password?: string | null
-): Promise<Article> {
+export async function createArticle(data: {
+  title: string;
+  slug: string;
+  content: string;
+  status: string;
+  password?: string | null;
+  seriesId?: number | null;
+  bookId?: number | null;
+}): Promise<Article> {
   const article = await apiClient<Article>('/admin/articles', {
     method: 'POST',
-    body: JSON.stringify({ title, content, publishedAt, hidden, password }),
+    body: JSON.stringify(data),
   });
   revalidatePath('/articles', 'layout');
   return article;
@@ -35,15 +37,19 @@ export async function createArticle(
 
 export async function updateArticle(
   id: number,
-  title: string,
-  content: string,
-  publishedAt?: string,
-  hidden?: boolean,
-  password?: string | null
+  data: {
+    title: string;
+    slug: string;
+    content: string;
+    status: string;
+    password?: string | null;
+    seriesId?: number | null;
+    bookId?: number | null;
+  }
 ): Promise<Article> {
   const article = await apiClient<Article>(`/admin/articles/${id}`, {
     method: 'PUT',
-    body: JSON.stringify({ title, content, publishedAt, hidden, password }),
+    body: JSON.stringify(data),
   });
   revalidatePath('/articles', 'layout');
   return article;

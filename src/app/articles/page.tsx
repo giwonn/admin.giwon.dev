@@ -45,9 +45,9 @@ export default async function ArticlesPage({ searchParams }: { searchParams: Sea
                       <Link href={`/articles/${article.id}`} className="text-blue-600 hover:underline">
                         {article.title}
                       </Link>
-                      {article.visibleOnBlog && (
+                      {article.status === "PUBLIC" && (
                         <a
-                          href={`${BLOG_URL}/articles/${article.id}`}
+                          href={`${BLOG_URL}/articles/${article.slug || article.id}`}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="text-gray-400 hover:text-gray-600 transition-colors"

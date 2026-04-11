@@ -59,7 +59,13 @@ export default function EditArticlePage() {
     fetchArticle();
   }, [id]);
 
-  const handleSave = async (publishedAt: string | undefined, hidden: boolean, password: string | null) => {
+  const handleSave = async (
+    slug: string,
+    status: string,
+    password: string | null,
+    seriesId: number | null,
+    bookId: number | null
+  ) => {
     if (!title.trim()) {
       setError("제목을 입력하세요.");
       return;
@@ -69,7 +75,15 @@ export default function EditArticlePage() {
     setError(null);
 
     try {
-      const updated = await updateArticle(id, title, content, publishedAt, hidden, password);
+      const updated = await updateArticle(id, {
+        title,
+        slug,
+        content,
+        status,
+        password,
+        seriesId,
+        bookId,
+      });
       setArticle(updated);
       router.push("/articles");
     } catch (err) {
@@ -123,9 +137,12 @@ export default function EditArticlePage() {
         isOpen={showPublishPanel}
         onClose={() => setShowPublishPanel(false)}
         onSave={handleSave}
-        defaultPublishedAt={article?.publishedAt}
-        defaultHidden={article?.hidden}
+        defaultSlug={article?.slug}
+        defaultStatus={article?.status}
         defaultPassword={article?.password}
+        defaultSeriesId={article?.seriesId}
+        defaultBookId={article?.bookId}
+        titleForSlug={title}
       />
     </div>
   );
