@@ -3,12 +3,12 @@
 import { useState, useEffect } from "react";
 import {
   getOverview,
-  getDailyPageViews,
+  getDailyVisitors,
   getTopPages,
   getTopReferrers,
   getArticleAccessHistory,
   type AnalyticsOverview,
-  type DailyPageViewCount,
+  type DailyVisitorCount,
   type PageViewCount,
   type ReferrerCount,
   type ArticleAccessHistory,
@@ -28,7 +28,7 @@ function formatLocalDate(d: Date) {
 
 interface AnalyticsContentProps {
   initialOverview: AnalyticsOverview | null;
-  initialDailyViews: DailyPageViewCount[];
+  initialDailyVisitors: DailyVisitorCount[];
   initialReferrers: ReferrerCount[];
   initialFrom: string;
   initialTo: string;
@@ -36,7 +36,7 @@ interface AnalyticsContentProps {
 
 export function AnalyticsContent({
   initialOverview,
-  initialDailyViews,
+  initialDailyVisitors,
   initialReferrers,
   initialFrom,
   initialTo,
@@ -45,7 +45,7 @@ export function AnalyticsContent({
   const [appliedTo, setAppliedTo] = useState(initialTo);
   const [preset, setPreset] = useState<PresetKey>("today");
   const [overview, setOverview] = useState(initialOverview);
-  const [dailyViews, setDailyViews] = useState(initialDailyViews);
+  const [dailyVisitors, setDailyVisitors] = useState(initialDailyVisitors);
   const [topPages, setTopPages] = useState<PageViewCount[]>([]);
   const [referrers, setReferrers] = useState(initialReferrers);
   const [isLoading, setIsLoading] = useState(false);
@@ -82,11 +82,11 @@ export function AnalyticsContent({
     try {
       const [o, d, r] = await Promise.all([
         getOverview(fromStr, toStr),
-        getDailyPageViews(fromStr, toStr),
+        getDailyVisitors(fromStr, toStr),
         getTopReferrers(fromStr, toStr),
       ]);
       setOverview(o);
-      setDailyViews(d);
+      setDailyVisitors(d);
       setReferrers(r);
     } catch {
       // ignore
@@ -143,13 +143,13 @@ export function AnalyticsContent({
           </div>
         </div>
 
-        {/* 일별 페이지뷰 */}
+        {/* 일별 방문자 */}
         <div id="daily" className="bg-white rounded-lg shadow p-6">
-          <h2 className="text-lg font-semibold mb-4">일별 페이지뷰</h2>
+          <h2 className="text-lg font-semibold mb-4">일별 방문자</h2>
           {isLoading ? (
             <div className="text-gray-400 text-center py-8">불러오는 중...</div>
           ) : (
-            <DailyLineChart data={dailyViews} from={appliedFrom} to={appliedTo} />
+            <DailyLineChart data={dailyVisitors} from={appliedFrom} to={appliedTo} />
           )}
         </div>
 
@@ -277,8 +277,8 @@ export function AnalyticsContent({
   );
 }
 
-function DailyLineChart({ data, from, to }: { data: DailyPageViewCount[]; from: string; to: string }) {
-  const dataMap = new Map(data.map((d) => [d.date, d.viewCount]));
+function DailyLineChart({ data, from, to }: { data: DailyVisitorCount[]; from: string; to: string }) {
+  const dataMap = new Map(data.map((d) => [d.date, d.visitorCount]));
 
   // to 기준 최소 7일, from이 더 넓으면 from 사용
   const endDate = new Date(to + "T00:00:00");
@@ -287,11 +287,11 @@ function DailyLineChart({ data, from, to }: { data: DailyPageViewCount[]; from: 
   const requestedStart = new Date(from + "T00:00:00");
   const startDate = requestedStart < minStart ? requestedStart : minStart;
 
-  const days: DailyPageViewCount[] = [];
+  const days: DailyVisitorCount[] = [];
   const current = new Date(startDate);
   while (current <= endDate) {
     const dateStr = formatLocalDate(current);
-    days.push({ date: dateStr, viewCount: dataMap.get(dateStr) ?? 0 });
+    days.push({ date: dateStr, visitorCount: dataMap.get(dateStr) ?? 0 });
     current.setDate(current.getDate() + 1);
   }
 
@@ -307,7 +307,7 @@ function DailyLineChart({ data, from, to }: { data: DailyPageViewCount[]; from: 
   const chartW = width - paddingLeft - paddingRight;
   const chartH = height - paddingTop - paddingBottom;
 
-  const maxCount = Math.max(...days.map((d) => d.viewCount), 1);
+  const maxCount = Math.max(...days.map((d) => d.visitorCount), 1);
 
   const yTicks: number[] = [];
   if (maxCount <= 5) {
@@ -321,7 +321,7 @@ function DailyLineChart({ data, from, to }: { data: DailyPageViewCount[]; from: 
   const getX = (i: number) => paddingLeft + (i / (days.length - 1)) * chartW;
   const getY = (v: number) => paddingTop + chartH - (v / maxCount) * chartH;
 
-  const linePath = days.map((d, i) => `${i === 0 ? "M" : "L"} ${getX(i)} ${getY(d.viewCount)}`).join(" ");
+  const linePath = days.map((d, i) => `${i === 0 ? "M" : "L"} ${getX(i)} ${getY(d.visitorCount)}`).join(" ");
   const areaPath = linePath + ` L ${getX(days.length - 1)} ${getY(0)} L ${getX(0)} ${getY(0)} Z`;
 
   // x축 라벨: 날짜가 많으면 간격 조절
@@ -357,8 +357,8 @@ function DailyLineChart({ data, from, to }: { data: DailyPageViewCount[]; from: 
         <path d={linePath} fill="none" stroke="#3b82f6" strokeWidth="2" strokeLinejoin="round" />
         {days.map((d, i) => (
           <g key={d.date}>
-            <circle cx={getX(i)} cy={getY(d.viewCount)} r="3" fill="#3b82f6" />
-            <title>{`${d.date}: ${d.viewCount}회`}</title>
+            <circle cx={getX(i)} cy={getY(d.visitorCount)} r="3" fill="#3b82f6" />
+            <title>{`${d.date}: ${d.visitorCount}회`}</title>
           </g>
         ))}
 

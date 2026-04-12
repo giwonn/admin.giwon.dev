@@ -1,6 +1,6 @@
 import {
   getOverview,
-  getDailyPageViews,
+  getDailyVisitors,
   getTopReferrers,
 } from "@/actions/analytics";
 import { AnalyticsContent } from "@/components/analytics/AnalyticsContent";
@@ -18,7 +18,7 @@ export default async function DashboardPage() {
 
   const [overviewResult, dailyResult, referrersResult] = await Promise.allSettled([
     getOverview(from, to),
-    getDailyPageViews(from, to),
+    getDailyVisitors(from, to),
     getTopReferrers(from, to),
   ]);
 
@@ -26,7 +26,7 @@ export default async function DashboardPage() {
     <div className="p-8">
       <AnalyticsContent
         initialOverview={overviewResult.status === "fulfilled" ? overviewResult.value : null}
-        initialDailyViews={dailyResult.status === "fulfilled" ? dailyResult.value : []}
+        initialDailyVisitors={dailyResult.status === "fulfilled" ? dailyResult.value : []}
         initialReferrers={referrersResult.status === "fulfilled" ? referrersResult.value : []}
         initialFrom={from}
         initialTo={to}

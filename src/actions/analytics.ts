@@ -41,6 +41,15 @@ export async function getDailyPageViews(from: string, to: string): Promise<Daily
   return apiClient<DailyPageViewCount[]>(`/admin/analytics/page-views?from=${from}&to=${to}`);
 }
 
+export interface DailyVisitorCount {
+  date: string;
+  visitorCount: number;
+}
+
+export async function getDailyVisitors(from: string, to: string): Promise<DailyVisitorCount[]> {
+  return apiClient<DailyVisitorCount[]>(`/admin/analytics/daily-visitors?from=${from}&to=${to}`);
+}
+
 export async function getTopPages(from: string, to: string): Promise<PageViewCount[]> {
   return apiClient<PageViewCount[]>(`/admin/analytics/top-pages?from=${from}&to=${to}`);
 }
