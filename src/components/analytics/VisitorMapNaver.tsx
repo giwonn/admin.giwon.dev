@@ -50,13 +50,13 @@ function MapContent({ locations, selectedIp }: MapRendererProps) {
 
   return (
     <NaverMap
-      defaultCenter={{ lat: 37.5665, lng: 126.978 }}
-      defaultZoom={locations.length > 0 ? 6 : 11}
+      defaultCenter={{ lat: 37.4979, lng: 127.0276 }}
+      defaultZoom={locations.length > 0 ? 7 : 11}
       ref={mapRef}
     >
       {locations.map((loc) => {
         const isSelected = loc.ipAddress === selectedIp;
-        const radius = Math.max(5000, Math.min(50000, (loc.visitCount / maxVisits) * 50000));
+        const radius = Math.max(500, Math.min(5000, (loc.visitCount / maxVisits) * 5000));
 
         return (
           <Circle
