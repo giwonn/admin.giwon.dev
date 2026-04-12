@@ -79,20 +79,15 @@ export function AnalyticsContent({
     setAppliedTo(toStr);
     setPreset(newPreset);
     setIsLoading(true);
-    try {
-      const [o, d, r] = await Promise.all([
-        getOverview(fromStr, toStr),
-        getDailyVisitors(fromStr, toStr),
-        getTopReferrers(fromStr, toStr),
-      ]);
-      setOverview(o);
-      setDailyVisitors(d);
-      setReferrers(r);
-    } catch {
-      // ignore
-    } finally {
-      setIsLoading(false);
-    }
+    const [o, d, r] = await Promise.allSettled([
+      getOverview(fromStr, toStr),
+      getDailyVisitors(fromStr, toStr),
+      getTopReferrers(fromStr, toStr),
+    ]);
+    if (o.status === "fulfilled") setOverview(o.value);
+    if (d.status === "fulfilled") setDailyVisitors(d.value);
+    if (r.status === "fulfilled") setReferrers(r.value);
+    setIsLoading(false);
     fetchTopPages(fromStr, toStr);
   }
 
