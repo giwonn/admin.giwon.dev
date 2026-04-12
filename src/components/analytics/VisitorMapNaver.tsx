@@ -68,8 +68,8 @@ function MapContent({ locations, focus, onMapInteraction }: MapRendererProps) {
 
   return (
     <NaverMap
-      defaultCenter={{ lat: 37.4979, lng: 127.0276 }}
-      defaultZoom={locations.length > 0 ? 7 : 11}
+      defaultCenter={{ lat: 36.5, lng: 127.5 }}
+      defaultZoom={7}
       ref={setMap}
     >
       {locations.map((loc) => {
