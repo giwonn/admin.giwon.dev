@@ -11,6 +11,8 @@ RUN npm ci
 COPY . .
 
 # Build the application
+ARG IMAGE_PUBLIC_URL=http://localhost:8080/images
+ENV IMAGE_PUBLIC_URL=$IMAGE_PUBLIC_URL
 RUN npm run build
 
 # Production stage
