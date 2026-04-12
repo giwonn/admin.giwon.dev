@@ -4,6 +4,16 @@ import { revalidatePath } from 'next/cache';
 import { apiClient } from '@/lib/api';
 import type { Article, PageResponse } from '@/types';
 
+const IMAGE_PUBLIC_URL = process.env.IMAGE_PUBLIC_URL || 'http://localhost:8080/images';
+
+function restoreImageUrls(content: string): string {
+  return content.replaceAll('/api/images/', `${IMAGE_PUBLIC_URL}/`);
+}
+
+function proxyImageUrls(content: string): string {
+  return content.replaceAll(`${IMAGE_PUBLIC_URL}/`, '/api/images/');
+}
+
 export async function getArticles(
   page: number = 0,
   size: number = 10
@@ -15,7 +25,8 @@ export async function getArticles(
 }
 
 export async function getArticle(id: number): Promise<Article> {
-  return apiClient<Article>(`/admin/articles/${id}`);
+  const article = await apiClient<Article>(`/admin/articles/${id}`);
+  return { ...article, content: proxyImageUrls(article.content) };
 }
 
 export async function createArticle(data: {
@@ -29,7 +40,7 @@ export async function createArticle(data: {
 }): Promise<Article> {
   const article = await apiClient<Article>('/admin/articles', {
     method: 'POST',
-    body: JSON.stringify(data),
+    body: JSON.stringify({ ...data, content: restoreImageUrls(data.content) }),
   });
   revalidatePath('/articles', 'layout');
   return article;
@@ -49,7 +60,7 @@ export async function updateArticle(
 ): Promise<Article> {
   const article = await apiClient<Article>(`/admin/articles/${id}`, {
     method: 'PUT',
-    body: JSON.stringify(data),
+    body: JSON.stringify({ ...data, content: restoreImageUrls(data.content) }),
   });
   revalidatePath('/articles', 'layout');
   return article;
@@ -75,5 +86,6 @@ export async function uploadImage(formData: FormData): Promise<{ url: string }> 
   }
 
   const json = await res.json();
-  return json.data;
+  const { url } = json.data as { url: string };
+  return { url: url.replace(IMAGE_PUBLIC_URL, '/api/images') };
 }
