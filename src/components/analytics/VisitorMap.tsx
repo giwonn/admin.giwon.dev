@@ -63,9 +63,9 @@ export function VisitorMap({ from, to }: VisitorMapProps) {
   const [accessHistory, setAccessHistory] = useState<IpAccessHistory[]>([]);
   const [isDetailLoading, setIsDetailLoading] = useState(false);
 
-  // 목록 정렬
-  const [listSortKey, setListSortKey] = useState<LocationSortKey | null>(null);
-  const [listSortDir, setListSortDir] = useState<SortDirection>("asc");
+  // 목록 정렬 (기본: 최근 방문 내림차순)
+  const [listSortKey, setListSortKey] = useState<LocationSortKey | null>("lastVisitedAt");
+  const [listSortDir, setListSortDir] = useState<SortDirection>("desc");
 
   // 상세 정렬
   const [detailSortKey, setDetailSortKey] = useState<DetailSortKey | null>(null);
