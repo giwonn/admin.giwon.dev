@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 const menuItems = [
-  { href: "/", label: "분석", icon: "G" },
+  { href: "/", label: "대시보드", icon: "H" },
   { href: "/articles", label: "글 관리", icon: "A" },
   { href: "/series", label: "시리즈", icon: "S" },
   { href: "/books", label: "독후감", icon: "B" },

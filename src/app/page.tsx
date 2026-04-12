@@ -12,8 +12,9 @@ function formatDate(date: Date): string {
 }
 
 export default async function DashboardPage() {
-  const to = formatDate(new Date());
-  const from = formatDate(new Date(Date.now() - 30 * 24 * 60 * 60 * 1000));
+  const today = formatDate(new Date());
+  const from = today;
+  const to = today;
 
   const [overviewResult, dailyResult, referrersResult] = await Promise.allSettled([
     getOverview(from, to),

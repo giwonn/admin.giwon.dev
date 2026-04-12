@@ -36,7 +36,7 @@ export function AnalyticsContent({
 }: AnalyticsContentProps) {
   const [appliedFrom, setAppliedFrom] = useState(initialFrom);
   const [appliedTo, setAppliedTo] = useState(initialTo);
-  const [preset, setPreset] = useState<PresetKey>("month");
+  const [preset, setPreset] = useState<PresetKey>("today");
   const [overview, setOverview] = useState(initialOverview);
   const [dailyViews, setDailyViews] = useState(initialDailyViews);
   const [referrers, setReferrers] = useState(initialReferrers);
