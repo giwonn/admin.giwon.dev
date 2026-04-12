@@ -6,8 +6,7 @@ import {
   NaverMap,
   NavermapsProvider,
   useNavermaps,
-  useMap,
-  Circle,
+  Marker,
 } from "react-naver-maps";
 import type { MapRendererProps } from "./MapRenderer";
 
@@ -31,7 +30,20 @@ function MapContent({ locations, selectedIp }: MapRendererProps) {
     }
   }, [selectedIp, locations, navermaps]);
 
-  function handleCircleMouseOver(loc: MapRendererProps["locations"][number], e: { coord: naver.maps.Coord }) {
+  function getMarkerIcon(visitCount: number, isSelected: boolean) {
+    const ratio = visitCount / maxVisits;
+    const opacity = isSelected ? 1 : 0.4 + ratio * 0.6;
+    const size = isSelected ? 14 : 8 + Math.round(ratio * 6);
+    const color = isSelected ? "#ef4444" : "#3b82f6";
+    const borderColor = isSelected ? "#dc2626" : "#2563eb";
+
+    return {
+      content: `<div style="width:${size}px;height:${size}px;border-radius:50%;background:${color};opacity:${opacity};border:2px solid ${borderColor};"></div>`,
+      anchor: new navermaps.Point(size / 2 + 1, size / 2 + 1),
+    };
+  }
+
+  function handleMarkerMouseOver(loc: MapRendererProps["locations"][number], e: { coord: naver.maps.Coord }) {
     if (!mapRef.current) return;
     const locationText = [loc.city, loc.country].filter(Boolean).join(", ");
     infoWindow.setContent(`
@@ -44,7 +56,7 @@ function MapContent({ locations, selectedIp }: MapRendererProps) {
     infoWindow.open(mapRef.current, e.coord);
   }
 
-  function handleCircleMouseOut() {
+  function handleMarkerMouseOut() {
     infoWindow.close();
   }
 
@@ -56,21 +68,15 @@ function MapContent({ locations, selectedIp }: MapRendererProps) {
     >
       {locations.map((loc) => {
         const isSelected = loc.ipAddress === selectedIp;
-        const radius = Math.max(500, Math.min(5000, (loc.visitCount / maxVisits) * 5000));
 
         return (
-          <Circle
+          <Marker
             key={loc.ipAddress}
-            center={{ lat: loc.latitude, lng: loc.longitude }}
-            radius={radius}
-            fillColor={isSelected ? "#ef4444" : "#3b82f6"}
-            fillOpacity={0.6}
-            strokeColor={isSelected ? "#dc2626" : "#2563eb"}
-            strokeWeight={isSelected ? 2 : 1}
-            strokeOpacity={0.8}
+            position={{ lat: loc.latitude, lng: loc.longitude }}
+            icon={getMarkerIcon(loc.visitCount, isSelected)}
             clickable={true}
-            onMouseover={(e) => handleCircleMouseOver(loc, e)}
-            onMouseout={handleCircleMouseOut}
+            onMouseover={(e) => handleMarkerMouseOver(loc, e)}
+            onMouseout={handleMarkerMouseOut}
           />
         );
       })}
