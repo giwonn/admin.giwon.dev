@@ -4,10 +4,9 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 const pageTitles: Record<string, string> = {
-  "/": "대시보드",
+  "/": "분석",
   "/articles": "글 관리",
   "/articles/new": "새 글 작성",
-  "/analytics": "분석",
   "/settings": "설정",
 };
 

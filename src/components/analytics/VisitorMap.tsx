@@ -2,9 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { getVisitorLocations, getIpAccessHistory, type VisitorLocation, type IpAccessHistory } from "@/actions/analytics";
+import type { MapRendererProps } from "./MapRenderer";
 import { formatDateTime } from "@/lib/format-date-time";
 import { sortBy, type SortDirection } from "@/lib/sort-utils";
-import "leaflet/dist/leaflet.css";
 import { ArrowLeft, ChevronUp, ChevronDown, ChevronsUpDown } from "lucide-react";
 
 interface VisitorMapProps {
@@ -54,10 +54,7 @@ type DetailSortKey = "path" | "location" | "createdAt";
 
 export function VisitorMap({ from, to }: VisitorMapProps) {
   const [locations, setLocations] = useState<VisitorLocation[]>([]);
-  const [MapComponent, setMapComponent] = useState<React.ComponentType<{
-    locations: VisitorLocation[];
-    selectedIp?: string | null;
-  }> | null>(null);
+  const [MapComponent, setMapComponent] = useState<React.ComponentType<MapRendererProps> | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedIp, setSelectedIp] = useState<string | null>(null);
   const [accessHistory, setAccessHistory] = useState<IpAccessHistory[]>([]);
@@ -72,8 +69,8 @@ export function VisitorMap({ from, to }: VisitorMapProps) {
   const [detailSortDir, setDetailSortDir] = useState<SortDirection>("asc");
 
   useEffect(() => {
-    import("./VisitorMapLeaflet").then((mod) => {
-      setMapComponent(() => mod.VisitorMapLeaflet);
+    import("./VisitorMapNaver").then((mod) => {
+      setMapComponent(() => mod.VisitorMapNaver);
     });
   }, []);
 

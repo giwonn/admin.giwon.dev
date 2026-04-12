@@ -23,28 +23,3 @@ export function getPresetRange(key: Exclude<PresetKey, "custom">): { from: Date;
     }
   }
 }
-
-export function detectPreset(from: Date, to: Date): PresetKey {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const f = new Date(from);
-  f.setHours(0, 0, 0, 0);
-  const t = new Date(to);
-  t.setHours(0, 0, 0, 0);
-
-  if (f.getTime() === today.getTime() && t.getTime() === today.getTime()) return "today";
-
-  const yesterday = new Date(today);
-  yesterday.setDate(yesterday.getDate() - 1);
-  if (f.getTime() === yesterday.getTime() && t.getTime() === yesterday.getTime()) return "yesterday";
-
-  const weekAgo = new Date(today);
-  weekAgo.setDate(weekAgo.getDate() - 7);
-  if (f.getTime() === weekAgo.getTime() && t.getTime() === today.getTime()) return "week";
-
-  const monthAgo = new Date(today);
-  monthAgo.setMonth(monthAgo.getMonth() - 1);
-  if (f.getTime() === monthAgo.getTime() && t.getTime() === today.getTime()) return "month";
-
-  return "custom";
-}

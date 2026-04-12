@@ -8,12 +8,13 @@ import { CalendarIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { type PresetKey, getPresetRange, detectPreset } from "@/lib/date-range-presets";
+import { type PresetKey, getPresetRange } from "@/lib/date-range-presets";
 
 interface DateRangePickerProps {
   from: Date;
   to: Date;
-  onChange: (range: { from: Date; to: Date }) => void;
+  preset?: PresetKey;
+  onChange: (range: { from: Date; to: Date }, preset: PresetKey) => void;
 }
 
 const PRESETS: { key: PresetKey; label: string }[] = [
@@ -24,28 +25,27 @@ const PRESETS: { key: PresetKey; label: string }[] = [
   { key: "custom", label: "커스텀" },
 ];
 
-export function DateRangePicker({ from, to, onChange }: DateRangePickerProps) {
+export function DateRangePicker({ from, to, preset = "month", onChange }: DateRangePickerProps) {
   const [openFrom, setOpenFrom] = React.useState(false);
   const [openTo, setOpenTo] = React.useState(false);
-  const activePreset = detectPreset(from, to);
 
   function handlePresetClick(key: PresetKey) {
     if (key === "custom") return;
     const range = getPresetRange(key);
-    onChange(range);
+    onChange(range, key);
   }
 
   function handleFromSelect(selected: Date | undefined) {
     if (!selected) return;
     const newFrom = selected > to ? to : selected;
-    onChange({ from: newFrom, to });
+    onChange({ from: newFrom, to }, "custom");
     setOpenFrom(false);
   }
 
   function handleToSelect(selected: Date | undefined) {
     if (!selected) return;
     const newTo = selected < from ? from : selected;
-    onChange({ from, to: newTo });
+    onChange({ from, to: newTo }, "custom");
     setOpenTo(false);
   }
 
@@ -59,7 +59,7 @@ export function DateRangePicker({ from, to, onChange }: DateRangePickerProps) {
             onClick={() => handlePresetClick(key)}
             className={cn(
               "px-3 py-2 text-sm rounded-md transition-colors",
-              activePreset === key
+              preset === key
                 ? "bg-blue-600 text-white"
                 : key === "custom"
                   ? "bg-gray-100 text-gray-400 cursor-default"

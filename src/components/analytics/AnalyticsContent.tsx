@@ -17,6 +17,7 @@ import { VisitorMap } from "./VisitorMap";
 import { DateRangePicker } from "@/components/ui/date-range-picker";
 import { formatDateTime } from "@/lib/format-date-time";
 import { X } from "lucide-react";
+import type { PresetKey } from "@/lib/date-range-presets";
 
 interface AnalyticsContentProps {
   initialOverview: AnalyticsOverview | null;
@@ -35,6 +36,7 @@ export function AnalyticsContent({
 }: AnalyticsContentProps) {
   const [appliedFrom, setAppliedFrom] = useState(initialFrom);
   const [appliedTo, setAppliedTo] = useState(initialTo);
+  const [preset, setPreset] = useState<PresetKey>("month");
   const [overview, setOverview] = useState(initialOverview);
   const [dailyViews, setDailyViews] = useState(initialDailyViews);
   const [referrers, setReferrers] = useState(initialReferrers);
@@ -44,11 +46,12 @@ export function AnalyticsContent({
     return d.toISOString().split("T")[0];
   }
 
-  async function handleDateChange(range: { from: Date; to: Date }) {
+  async function handleDateChange(range: { from: Date; to: Date }, newPreset: PresetKey) {
     const fromStr = formatDate(range.from);
     const toStr = formatDate(range.to);
     setAppliedFrom(fromStr);
     setAppliedTo(toStr);
+    setPreset(newPreset);
     setIsLoading(true);
     try {
       const [o, d, r] = await Promise.all([
@@ -73,6 +76,7 @@ export function AnalyticsContent({
         <DateRangePicker
           from={new Date(appliedFrom + "T00:00:00")}
           to={new Date(appliedTo + "T00:00:00")}
+          preset={preset}
           onChange={handleDateChange}
         />
       </div>
