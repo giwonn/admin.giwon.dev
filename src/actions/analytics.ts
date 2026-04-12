@@ -2,6 +2,8 @@
 
 import { apiClient } from "@/lib/api";
 
+const TZ = "Asia/Seoul";
+
 export interface AnalyticsOverview {
   totalPageViews: number;
   uniqueVisitors: number;
@@ -24,21 +26,11 @@ export interface ReferrerCount {
 }
 
 export async function getOverview(from: string, to: string): Promise<AnalyticsOverview> {
-  return apiClient<AnalyticsOverview>(`/admin/analytics/overview?from=${from}&to=${to}`);
-}
-
-export async function getVisitorStats(): Promise<{ today: number; yesterday: number; total: number }> {
-  const today = new Date();
-  const from = new Date(today);
-  from.setDate(from.getDate() - 30);
-  const formatDate = (d: Date) => d.toISOString().split('T')[0];
-  return apiClient<{ today: number; yesterday: number; total: number }>(
-    `/admin/analytics/overview?from=${formatDate(from)}&to=${formatDate(today)}`
-  );
+  return apiClient<AnalyticsOverview>(`/admin/analytics/overview?from=${from}&to=${to}&tz=${TZ}`);
 }
 
 export async function getDailyPageViews(from: string, to: string): Promise<DailyPageViewCount[]> {
-  return apiClient<DailyPageViewCount[]>(`/admin/analytics/page-views?from=${from}&to=${to}`);
+  return apiClient<DailyPageViewCount[]>(`/admin/analytics/page-views?from=${from}&to=${to}&tz=${TZ}`);
 }
 
 export interface DailyVisitorCount {
@@ -47,15 +39,15 @@ export interface DailyVisitorCount {
 }
 
 export async function getDailyVisitors(from: string, to: string): Promise<DailyVisitorCount[]> {
-  return apiClient<DailyVisitorCount[]>(`/admin/analytics/daily-visitors?from=${from}&to=${to}`);
+  return apiClient<DailyVisitorCount[]>(`/admin/analytics/daily-visitors?from=${from}&to=${to}&tz=${TZ}`);
 }
 
 export async function getTopPages(from: string, to: string): Promise<PageViewCount[]> {
-  return apiClient<PageViewCount[]>(`/admin/analytics/top-pages?from=${from}&to=${to}`);
+  return apiClient<PageViewCount[]>(`/admin/analytics/top-pages?from=${from}&to=${to}&tz=${TZ}`);
 }
 
 export async function getTopReferrers(from: string, to: string): Promise<ReferrerCount[]> {
-  return apiClient<ReferrerCount[]>(`/admin/analytics/referrers?from=${from}&to=${to}`);
+  return apiClient<ReferrerCount[]>(`/admin/analytics/referrers?from=${from}&to=${to}&tz=${TZ}`);
 }
 
 export interface PopularArticle {
@@ -79,7 +71,7 @@ export interface VisitorLocation {
 }
 
 export async function getVisitorLocations(from: string, to: string): Promise<VisitorLocation[]> {
-  return apiClient<VisitorLocation[]>(`/admin/analytics/visitor-locations?from=${from}&to=${to}`);
+  return apiClient<VisitorLocation[]>(`/admin/analytics/visitor-locations?from=${from}&to=${to}&tz=${TZ}`);
 }
 
 export interface IpAccessHistory {
@@ -91,7 +83,7 @@ export interface IpAccessHistory {
 }
 
 export async function getIpAccessHistory(ip: string, from: string, to: string): Promise<IpAccessHistory[]> {
-  return apiClient<IpAccessHistory[]>(`/admin/analytics/ip-access-history?ip=${encodeURIComponent(ip)}&from=${from}&to=${to}`);
+  return apiClient<IpAccessHistory[]>(`/admin/analytics/ip-access-history?ip=${encodeURIComponent(ip)}&from=${from}&to=${to}&tz=${TZ}`);
 }
 
 export interface ArticleAccessHistory {
@@ -102,5 +94,5 @@ export interface ArticleAccessHistory {
 }
 
 export async function getArticleAccessHistory(articleId: number, from: string, to: string): Promise<ArticleAccessHistory[]> {
-  return apiClient<ArticleAccessHistory[]>(`/admin/analytics/article-access-history?articleId=${articleId}&from=${from}&to=${to}`);
+  return apiClient<ArticleAccessHistory[]>(`/admin/analytics/article-access-history?articleId=${articleId}&from=${from}&to=${to}&tz=${TZ}`);
 }
