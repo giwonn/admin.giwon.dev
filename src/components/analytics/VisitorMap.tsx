@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { getVisitorLocations, getIpAccessHistory, type VisitorLocation, type IpAccessHistory } from "@/actions/analytics";
-import type { MapRendererProps } from "./MapRenderer";
+import type { MapRendererProps, MapFocus } from "./MapRenderer";
 import { formatDateTime } from "@/lib/format-date-time";
 import { sortBy, type SortDirection } from "@/lib/sort-utils";
 import { ArrowLeft, ChevronUp, ChevronDown, ChevronsUpDown } from "lucide-react";
@@ -56,7 +56,8 @@ export function VisitorMap({ from, to }: VisitorMapProps) {
   const [locations, setLocations] = useState<VisitorLocation[]>([]);
   const [MapComponent, setMapComponent] = useState<React.ComponentType<MapRendererProps> | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [focusedIp, setFocusedIp] = useState<string | null>(null);
+  const [focus, setFocus] = useState<MapFocus | null>(null);
+  const focusKeyRef = useRef(0);
   const [selectedIp, setSelectedIp] = useState<string | null>(null);
   const [accessHistory, setAccessHistory] = useState<IpAccessHistory[]>([]);
   const [isDetailLoading, setIsDetailLoading] = useState(false);
@@ -78,16 +79,15 @@ export function VisitorMap({ from, to }: VisitorMapProps) {
   useEffect(() => {
     async function fetchLocations() {
       setIsLoading(true);
-      setFocusedIp(null);
+      setFocus(null);
       setSelectedIp(null);
       setAccessHistory([]);
       try {
         const data = await getVisitorLocations(from, to);
         setLocations(data);
-        // 가장 최근 방문 IP를 지도에서 포커스
         if (data.length > 0) {
           const latest = data.reduce((a, b) => a.lastVisitedAt > b.lastVisitedAt ? a : b);
-          setFocusedIp(latest.ipAddress);
+          setFocus({ ip: latest.ipAddress, key: ++focusKeyRef.current });
         }
       } catch {
         // ignore
@@ -99,7 +99,7 @@ export function VisitorMap({ from, to }: VisitorMapProps) {
   }, [from, to]);
 
   async function handleIpClick(ip: string) {
-    setFocusedIp(ip);
+    setFocus({ ip, key: ++focusKeyRef.current });
     setSelectedIp(ip);
     setIsDetailLoading(true);
     setDetailSortKey(null);
@@ -116,11 +116,10 @@ export function VisitorMap({ from, to }: VisitorMapProps) {
   function handleBack() {
     setSelectedIp(null);
     setAccessHistory([]);
-    // 다시 최근 방문 IP로 지도 포커스
-    if (locations.length > 0) {
-      const latest = locations.reduce((a, b) => a.lastVisitedAt > b.lastVisitedAt ? a : b);
-      setFocusedIp(latest.ipAddress);
-    }
+  }
+
+  function handleMapInteraction() {
+    setFocus(null);
   }
 
   function handleListSort(key: LocationSortKey) {
@@ -181,7 +180,7 @@ export function VisitorMap({ from, to }: VisitorMapProps) {
             {isLoading ? "불러오는 중..." : "지도 로딩 중..."}
           </div>
         ) : (
-          <MapComponent locations={locations} selectedIp={focusedIp} />
+          <MapComponent locations={locations} focus={focus} onMapInteraction={handleMapInteraction} />
         )}
       </div>
 

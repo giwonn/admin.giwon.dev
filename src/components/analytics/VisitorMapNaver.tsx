@@ -7,12 +7,13 @@ import {
   NavermapsProvider,
   useNavermaps,
   Marker,
+  useListener,
 } from "react-naver-maps";
 import type { MapRendererProps } from "./MapRenderer";
 
 const NCP_CLIENT_ID = "9ujc5qa4l3";
 
-function MapContent({ locations, selectedIp }: MapRendererProps) {
+function MapContent({ locations, focus, onMapInteraction }: MapRendererProps) {
   const navermaps = useNavermaps();
   const [map, setMap] = useState<naver.maps.Map | null>(null);
   const [infoWindow] = useState(
@@ -20,15 +21,20 @@ function MapContent({ locations, selectedIp }: MapRendererProps) {
   );
 
   const maxVisits = Math.max(...locations.map((l) => l.visitCount), 1);
+  const focusedIp = focus?.ip ?? null;
+
+  // 사용자가 지도를 직접 조작하면 포커스 해제
+  useListener(map, "dragstart", () => onMapInteraction?.());
+  useListener(map, "zoom_changed", () => onMapInteraction?.());
 
   useEffect(() => {
-    if (!map || !selectedIp) return;
-    const loc = locations.find((l) => l.ipAddress === selectedIp);
+    if (!map || !focus) return;
+    const loc = locations.find((l) => l.ipAddress === focus.ip);
     if (loc) {
       map.panTo(new navermaps.LatLng(loc.latitude, loc.longitude));
       map.setZoom(12, true);
     }
-  }, [selectedIp, locations, navermaps, map]);
+  }, [focus, locations, navermaps, map]);
 
   function getMarkerIcon(visitCount: number, isSelected: boolean) {
     const ratio = visitCount / maxVisits;
@@ -67,7 +73,7 @@ function MapContent({ locations, selectedIp }: MapRendererProps) {
       ref={setMap}
     >
       {locations.map((loc) => {
-        const isSelected = loc.ipAddress === selectedIp;
+        const isSelected = loc.ipAddress === focusedIp;
 
         return (
           <Marker
@@ -84,11 +90,11 @@ function MapContent({ locations, selectedIp }: MapRendererProps) {
   );
 }
 
-export function VisitorMapNaver({ locations, selectedIp }: MapRendererProps) {
+export function VisitorMapNaver({ locations, focus, onMapInteraction }: MapRendererProps) {
   return (
     <NavermapsProvider ncpKeyId={NCP_CLIENT_ID}>
       <MapDiv style={{ width: "100%", height: "100%" }}>
-        <MapContent locations={locations} selectedIp={selectedIp} />
+        <MapContent locations={locations} focus={focus} onMapInteraction={onMapInteraction} />
       </MapDiv>
     </NavermapsProvider>
   );
