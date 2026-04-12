@@ -38,7 +38,7 @@ export function PublishPanel({
   onClose,
   onSave,
   defaultSlug = "",
-  defaultStatus = "DRAFT",
+  defaultStatus = "PUBLIC",
   defaultPassword = null,
   defaultSeriesId = null,
   defaultBookId = null,
