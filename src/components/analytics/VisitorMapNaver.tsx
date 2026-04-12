@@ -80,7 +80,7 @@ function MapContent({ locations, selectedIp }: MapRendererProps) {
 
 export function VisitorMapNaver({ locations, selectedIp }: MapRendererProps) {
   return (
-    <NavermapsProvider ncpClientId={NCP_CLIENT_ID}>
+    <NavermapsProvider ncpKeyId={NCP_CLIENT_ID}>
       <MapDiv style={{ width: "100%", height: "100%" }}>
         <MapContent locations={locations} selectedIp={selectedIp} />
       </MapDiv>
