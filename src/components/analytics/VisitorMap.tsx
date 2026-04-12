@@ -56,6 +56,7 @@ export function VisitorMap({ from, to }: VisitorMapProps) {
   const [locations, setLocations] = useState<VisitorLocation[]>([]);
   const [MapComponent, setMapComponent] = useState<React.ComponentType<MapRendererProps> | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [focusedIp, setFocusedIp] = useState<string | null>(null);
   const [selectedIp, setSelectedIp] = useState<string | null>(null);
   const [accessHistory, setAccessHistory] = useState<IpAccessHistory[]>([]);
   const [isDetailLoading, setIsDetailLoading] = useState(false);
@@ -77,9 +78,17 @@ export function VisitorMap({ from, to }: VisitorMapProps) {
   useEffect(() => {
     async function fetchLocations() {
       setIsLoading(true);
+      setFocusedIp(null);
+      setSelectedIp(null);
+      setAccessHistory([]);
       try {
         const data = await getVisitorLocations(from, to);
         setLocations(data);
+        // 가장 최근 방문 IP를 지도에서 포커스
+        if (data.length > 0) {
+          const latest = data.reduce((a, b) => a.lastVisitedAt > b.lastVisitedAt ? a : b);
+          setFocusedIp(latest.ipAddress);
+        }
       } catch {
         // ignore
       } finally {
@@ -90,6 +99,7 @@ export function VisitorMap({ from, to }: VisitorMapProps) {
   }, [from, to]);
 
   async function handleIpClick(ip: string) {
+    setFocusedIp(ip);
     setSelectedIp(ip);
     setIsDetailLoading(true);
     setDetailSortKey(null);
@@ -106,6 +116,11 @@ export function VisitorMap({ from, to }: VisitorMapProps) {
   function handleBack() {
     setSelectedIp(null);
     setAccessHistory([]);
+    // 다시 최근 방문 IP로 지도 포커스
+    if (locations.length > 0) {
+      const latest = locations.reduce((a, b) => a.lastVisitedAt > b.lastVisitedAt ? a : b);
+      setFocusedIp(latest.ipAddress);
+    }
   }
 
   function handleListSort(key: LocationSortKey) {
@@ -166,7 +181,7 @@ export function VisitorMap({ from, to }: VisitorMapProps) {
             {isLoading ? "불러오는 중..." : "지도 로딩 중..."}
           </div>
         ) : (
-          <MapComponent locations={locations} selectedIp={selectedIp} />
+          <MapComponent locations={locations} selectedIp={focusedIp} />
         )}
       </div>
 

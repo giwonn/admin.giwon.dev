@@ -280,10 +280,14 @@ export function AnalyticsContent({
 function DailyLineChart({ data, from, to }: { data: DailyPageViewCount[]; from: string; to: string }) {
   const dataMap = new Map(data.map((d) => [d.date, d.viewCount]));
 
-  // from~to 범위의 날짜 생성
-  const days: DailyPageViewCount[] = [];
-  const startDate = new Date(from + "T00:00:00");
+  // to 기준 최소 7일, from이 더 넓으면 from 사용
   const endDate = new Date(to + "T00:00:00");
+  const minStart = new Date(endDate);
+  minStart.setDate(minStart.getDate() - 6);
+  const requestedStart = new Date(from + "T00:00:00");
+  const startDate = requestedStart < minStart ? requestedStart : minStart;
+
+  const days: DailyPageViewCount[] = [];
   const current = new Date(startDate);
   while (current <= endDate) {
     const dateStr = formatLocalDate(current);
@@ -292,14 +296,6 @@ function DailyLineChart({ data, from, to }: { data: DailyPageViewCount[]; from: 
   }
 
   if (days.length === 0) return <div className="text-gray-400 text-center py-8">데이터가 없습니다</div>;
-  if (days.length === 1) {
-    return (
-      <div className="text-center py-4">
-        <div className="text-sm text-gray-500">{days[0].date}</div>
-        <div className="text-2xl font-bold mt-1">{days[0].viewCount}회</div>
-      </div>
-    );
-  }
 
   const width = 800;
   const height = 200;
